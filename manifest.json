@@ -1,18 +1,18 @@
 {
-  "name": "Caps Manager",
-  "short_name": "Caps",
+  "name": "HORIZON",
+  "short_name": "HORIZON",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F5F3EE",
-  "theme_color": "#0E1F17",
+  "background_color": "#F2F2F0",
+  "theme_color": "#0A0A0A",
   "icons": [
     {
       "src": "icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }

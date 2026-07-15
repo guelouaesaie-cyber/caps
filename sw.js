@@ -1,6 +1,6 @@
-// Caps Manager — service worker
+// HORIZON — service worker
 // Garde une copie de l'app sur l'appareil pour qu'elle marche sans serveur.
-const CACHE = "caps-v1";
+const CACHE = "horizon-v2";
 const FILES = ["./", "./index.html", "./manifest.json", "./icon.svg"];
 
 // Installation : on télécharge et on garde tout.

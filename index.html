@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Caps">
-<meta name="theme-color" content="#0E1F17">
+<meta name="apple-mobile-web-app-title" content="HORIZON">
+<meta name="theme-color" content="#0A0A0A">
 <link rel="manifest" href="manifest.json">
-<title>Caps Manager</title>
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%230E1F17'/%3E%3Cpath d='M40 108c0-28 22-50 50-50s50 22 50 50z' fill='%232FBF71'/%3E%3Crect x='34' y='108' width='112' height='14' rx='7' fill='%23F5F3EE'/%3E%3C/svg%3E">
+<title>HORIZON</title>
+<link rel="apple-touch-icon" href="icon.svg">
 <style>
 :root{
-  --ink:#0E1F17; --ink-2:#1B3226; --line:#2A4436;
-  --paper:#F5F3EE; --paper-2:#FFFFFF; --mute:#7C8B83;
-  --green:#2FBF71; --green-d:#1E8A4F; --amber:#E8A33D;
+  --ink:#0A0A0A; --ink-2:#1C1C1C; --line:#2E2E2E;
+  --paper:#F2F2F0; --paper-2:#FFFFFF; --mute:#767676;
+  --green:#0A0A0A; --green-d:#0A0A0A; --amber:#B8860B;
   --red:#D9534F; --blue:#4A90D9; --violet:#8B6FC4;
   --r:14px; --tap:56px;
   --sat:env(safe-area-inset-top); --sab:env(safe-area-inset-bottom);
@@ -36,9 +36,9 @@ header{
   padding:calc(var(--sat) + 14px) 20px 14px;
   display:flex;align-items:center;gap:14px;flex:none;
 }
-header h1{margin:0;font-size:19px;font-weight:700;letter-spacing:-.2px;flex:1}
+header h1{margin:0;font-size:20px;font-weight:800;letter-spacing:2.5px;flex:1}
 header .cap{width:26px;height:26px;flex:none}
-#today{font-size:13px;color:#8FA79A;font-variant-numeric:tabular-nums}
+#today{font-size:13px;color:#9A9A9A;font-variant-numeric:tabular-nums}
 main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 16px 28px}
 nav{
   flex:none;display:flex;background:var(--paper-2);
@@ -64,7 +64,7 @@ p.sub{margin:0 0 18px;color:var(--mute);font-size:14px}
 @media(min-width:700px){.grid{grid-template-columns:repeat(4,1fr)}}
 .kpi{
   background:var(--paper-2);border-radius:var(--r);padding:14px;
-  box-shadow:0 1px 2px rgba(14,31,23,.07);border-bottom:3px solid var(--green);
+  box-shadow:0 1px 2px rgba(10,10,10,.07);border-bottom:3px solid var(--green);
 }
 .kpi .k{font-size:10.5px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:5px}
 .kpi .v{font-size:23px;font-weight:800;margin-top:7px;letter-spacing:-.6px;font-variant-numeric:tabular-nums;word-break:break-word}
@@ -72,17 +72,17 @@ p.sub{margin:0 0 18px;color:var(--mute);font-size:14px}
 .kpi.r{border-bottom-color:var(--red)} .kpi.d{border-bottom-color:var(--ink)}
 .kpi .v.sm{font-size:17px;letter-spacing:-.2px}
 
-.card{background:var(--paper-2);border-radius:var(--r);padding:16px;box-shadow:0 1px 2px rgba(14,31,23,.07);margin-top:14px}
+.card{background:var(--paper-2);border-radius:var(--r);padding:16px;box-shadow:0 1px 2px rgba(10,10,10,.07);margin-top:14px}
 .card h3{margin:0 0 12px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--mute)}
 
 /* progress */
 .bar{height:13px;background:#E7E4DC;border-radius:99px;overflow:hidden}
-.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--green-d),var(--green));border-radius:99px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.bar i{display:block;height:100%;background:var(--ink);border-radius:99px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
 .brow{display:flex;justify-content:space-between;font-size:13px;margin-top:9px;color:var(--mute);font-variant-numeric:tabular-nums}
 
 /* chart */
 .chart{display:flex;align-items:flex-end;gap:4px;height:130px;margin-top:6px}
-.chart div{flex:1;background:var(--green);border-radius:4px 4px 0 0;min-height:2px;opacity:.85;transition:height .4s}
+.chart div{flex:1;background:var(--ink);border-radius:4px 4px 0 0;min-height:2px;opacity:.85;transition:height .4s}
 .clab{display:flex;gap:4px;margin-top:6px}
 .clab span{flex:1;text-align:center;font-size:9px;color:var(--mute)}
 
@@ -102,7 +102,7 @@ p.sub{margin:0 0 18px;color:var(--mute);font-size:14px}
   border-radius:12px;background:var(--paper-2);color:var(--ink);
   font-size:17px;font-weight:600;appearance:none;
 }
-.f input:focus,.f select:focus{outline:0;border-color:var(--green);box-shadow:0 0 0 3.5px rgba(47,191,113,.16)}
+.f input:focus,.f select:focus{outline:0;border-color:var(--green);box-shadow:0 0 0 3.5px rgba(10,10,10,.13)}
 .f select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237C8B83' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:40px}
 .f .ro{background:#EFEDE7;color:var(--mute);display:flex;align-items:center;min-height:var(--tap);padding:0 15px;border-radius:12px;font-weight:700;font-variant-numeric:tabular-nums}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -119,14 +119,14 @@ p.sub{margin:0 0 18px;color:var(--mute);font-size:14px}
 
 /* total */
 .tot{background:var(--ink);color:var(--paper);border-radius:var(--r);padding:17px 19px;display:flex;justify-content:space-between;align-items:center;margin:16px 0}
-.tot span{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:#8FA79A;font-weight:700}
+.tot span{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:#9A9A9A;font-weight:700}
 .tot b{font-size:29px;font-weight:800;letter-spacing:-.8px;font-variant-numeric:tabular-nums}
-.free{background:rgba(47,191,113,.14);color:var(--green-d);border-radius:10px;padding:11px 13px;font-size:13.5px;font-weight:600;margin-bottom:14px;display:flex;gap:8px;align-items:center}
+.free{background:#EDEDEB;color:var(--ink);border-radius:10px;padding:11px 13px;font-size:13.5px;font-weight:600;margin-bottom:14px;display:flex;gap:8px;align-items:center}
 
 .btn{
   width:100%;min-height:60px;border:0;border-radius:14px;background:var(--green-d);
   color:#fff;font-size:18px;font-weight:800;letter-spacing:.2px;
-  box-shadow:0 2px 10px rgba(30,138,79,.3);transition:transform .1s;
+  box-shadow:0 2px 10px rgba(10,10,10,.22);transition:transform .1s;
 }
 .btn:active{transform:scale(.985)}
 .btn.g{background:var(--paper-2);color:var(--ink);border:1.5px solid #DCD8CE;box-shadow:none;font-size:16px;min-height:var(--tap)}
@@ -145,7 +145,7 @@ p.sub{margin:0 0 18px;color:var(--mute);font-size:14px}
 }
 .chips button.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 
-.o{background:var(--paper-2);border-radius:12px;padding:13px 15px;margin-bottom:9px;box-shadow:0 1px 2px rgba(14,31,23,.06)}
+.o{background:var(--paper-2);border-radius:12px;padding:13px 15px;margin-bottom:9px;box-shadow:0 1px 2px rgba(10,10,10,.06)}
 .o .h{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .o .n{font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
 .o .m{font-size:13.5px;color:var(--mute);margin-top:3px}
@@ -170,12 +170,12 @@ p.sub{margin:0 0 18px;color:var(--mute);font-size:14px}
   position:fixed;left:50%;bottom:calc(var(--sab) + 84px);transform:translate(-50%,22px);
   background:var(--ink);color:var(--paper);padding:13px 22px;border-radius:99px;
   font-size:14.5px;font-weight:700;opacity:0;pointer-events:none;transition:.25s;z-index:99;
-  box-shadow:0 6px 22px rgba(14,31,23,.3);max-width:88vw;text-align:center;
+  box-shadow:0 6px 22px rgba(10,10,10,.32);max-width:88vw;text-align:center;
 }
 #toast.on{opacity:1;transform:translate(-50%,0)}
 
 /* modal */
-#modal{position:fixed;inset:0;background:rgba(14,31,23,.55);display:flex;align-items:center;justify-content:center;padding:22px;z-index:100;backdrop-filter:blur(3px)}
+#modal{position:fixed;inset:0;background:rgba(10,10,10,.55);display:flex;align-items:center;justify-content:center;padding:22px;z-index:100;backdrop-filter:blur(3px)}
 #modal .box{background:var(--paper);border-radius:18px;padding:22px;max-width:390px;width:100%}
 #modal h3{margin:0 0 8px;font-size:19px}
 #modal p{margin:0 0 18px;color:var(--mute);font-size:14.5px}
@@ -186,8 +186,8 @@ p.sub{margin:0 0 18px;color:var(--mute);font-size:14px}
 <body>
 <div id="app">
   <header>
-    <svg class="cap" viewBox="0 0 180 180" aria-hidden="true"><path d="M40 108c0-28 22-50 50-50s50 22 50 50z" fill="#2FBF71"/><rect x="34" y="108" width="112" height="14" rx="7" fill="#F5F3EE"/></svg>
-    <h1>Caps Manager</h1>
+    
+    <h1>HORIZON</h1>
     <div id="today"></div>
   </header>
   <main id="main"></main>
@@ -295,14 +295,14 @@ function vAcc(){
     <div class="card">
       <h3>Objectif du mois</h3>
       <div class="bar"><i style="width:${s.pct}%"></i></div>
-      <div class="brow"><span>${money(s.mois)} sur ${money(S.goal)}</span><b style="color:var(--green-d)">${s.pct.toFixed(1)}%</b></div>
+      <div class="brow"><span>${money(s.mois)} sur ${money(S.goal)}</span><b style="color:var(--ink)">${s.pct.toFixed(1)}%</b></div>
       <div class="brow"><span>Reste ${money(s.rest)}</span><span>🚚 ${s.tl}</span></div>
       <button class="btn g" style="margin-top:13px" onclick="setGoal()">Modifier l'objectif</button>
     </div>
     <div class="card"><h3>Ventes des 14 derniers jours</h3><div class="chart">${bars}</div><div class="clab">${labs}</div></div>
-    <div class="card"><h3>Paiements</h3><div class="sb">${pr(s.pays,["#2FBF71","#E8A33D","#4A90D9"])}</div></div>
-    <div class="card"><h3>Villes</h3><div class="sb">${pr(s.villes,["#1E8A4F","#4A90D9","#8B6FC4","#E8A33D","#D9534F"])}</div></div>
-    <div class="card"><h3>Statuts</h3><div class="sb">${pr(s.stats,["#E8A33D","#4A90D9","#8B6FC4","#2FBF71","#D9534F"])}</div></div>
+    <div class="card"><h3>Paiements</h3><div class="sb">${pr(s.pays,["#0A0A0A","#6E6E6E","#B4B4B4"])}</div></div>
+    <div class="card"><h3>Villes</h3><div class="sb">${pr(s.villes,["#0A0A0A","#4A4A4A","#787878","#A6A6A6","#CFCFCF"])}</div></div>
+    <div class="card"><h3>Statuts</h3><div class="sb">${pr(s.stats,["#B8860B","#4A4A4A","#787878","#0A0A0A","#C0392B"])}</div></div>
   </div>`;
 }
 
@@ -324,9 +324,9 @@ function vNew(){
     ${free?`<div class="free">✅ Livraison offerte — Dakar, ${D.qte} articles</div>`:
       `<div class="f"><label>Frais de livraison${D.hors?" (part entreprise)":""}</label>
         <div class="seg pill">${FRAIS.map(f=>`<button onclick="setF(${f})" class="${D.frais==f?"on":""}">${fmt(f)}</button>`).join("")}</div></div>`}
-    ${D.hors?`<div class="free" style="background:rgba(74,144,217,.13);color:#2A6BA8">🚚 Le transport vers la ville est payé par le client</div>`:""}
+    ${D.hors?`<div class="free" style="background:#EDEDEB;color:#3A3A3A">🚚 Le transport vers la ville est payé par le client</div>`:""}
     <div class="tot"><div><span>Total à payer</span><br><b>${money(art+fr)}</b></div>
-      <div style="text-align:right;font-size:12.5px;color:#8FA79A;line-height:1.7">${D.qte} × ${fmt(D.prix)}<br>+ ${fmt(fr)} livraison</div></div>
+      <div style="text-align:right;font-size:12.5px;color:#9A9A9A;line-height:1.7">${D.qte} × ${fmt(D.prix)}<br>+ ${fmt(fr)} livraison</div></div>
     <div class="f2">
       <div class="f"><label>Paiement</label><select onchange="D.paiement=this.value">${PAY.map(p=>`<option ${D.paiement===p?"selected":""}>${p}</option>`).join("")}</select></div>
       <div class="f"><label>Livreur</label><select onchange="D.livreur=this.value">${LIVR.map(p=>`<option ${D.livreur===p?"selected":""}>${p}</option>`).join("")}</select></div>
@@ -419,7 +419,7 @@ function vRap(){
       <span>Panier ${money(L.length?ca/L.length:0)}</span></div></div>`;};
   const dl=LIVR.map(l=>{const n=S.orders.filter(o=>o.livreur===l&&o.statut==="Livrée").length;
     const ca=A.filter(o=>o.livreur===l).reduce((s,o)=>s+total(o),0);
-    return `<div class="row"><b>${l}</b><div class="t"><i style="width:${Math.min(100,n*12)}%;background:var(--green)"></i></div><u>${n} liv.</u></div>`;}).join("");
+    return `<div class="row"><b>${l}</b><div class="t"><i style="width:${Math.min(100,n*12)}%;background:var(--ink)"></i></div><u>${n} liv.</u></div>`;}).join("");
   return `<div class="page"><h2 class="t">Rapports</h2><p class="sub">Les commandes annulées sont exclues du CA</p>
     ${R("📅 Journalier",dmy(t),o=>o.date===t)}
     ${R("📆 Hebdomadaire",dmy(ws)+" → "+dmy(t),o=>o.date>=ws&&o.date<=t)}
@@ -446,10 +446,10 @@ window.expCSV=()=>{
   const H=["N° Commande","Date","Nom client","Téléphone","Ville","Hors Dakar","Quantité","Prix unitaire","Total articles","Frais livraison","TOTAL A PAYER","Paiement","Livreur","Statut"];
   const esc=v=>'"'+String(v).replace(/"/g,'""')+'"';
   const rows=S.orders.map(o=>[o.id,dmy(o.date),o.nom,o.tel,o.ville,o.hors?"OUI":"NON",o.qte,o.prix,o.qte*o.prix,frais(o),total(o),o.paiement,o.livreur,o.statut].map(esc).join(";"));
-  dl("ventes-casquettes-"+today()+".csv","\uFEFF"+H.map(esc).join(";")+"\r\n"+rows.join("\r\n"),"text/csv");
+  dl("ventes-horizon-"+today()+".csv","\uFEFF"+H.map(esc).join(";")+"\r\n"+rows.join("\r\n"),"text/csv");
   toast("Export CSV prêt");
 };
-window.expJSON=()=>{dl("sauvegarde-caps-"+today()+".json",JSON.stringify(S),"application/json");toast("Sauvegarde prête");};
+window.expJSON=()=>{dl("sauvegarde-horizon-"+today()+".json",JSON.stringify(S),"application/json");toast("Sauvegarde prête");};
 window.imp=()=>{
   const i=document.createElement("input");i.type="file";i.accept=".json,application/json";
   i.onchange=()=>{const f=i.files[0];if(!f)return;const r=new FileReader();
@@ -511,8 +511,8 @@ function mark(ready){
     t.dataset.ok="1";
     t.textContent=t.textContent+" · ⬇︎";
     t.title="App enregistrée sur l'appareil";
-    if(!sessionStorage.getItem("caps.said")){
-      sessionStorage.setItem("caps.said","1");
+    if(!sessionStorage.getItem("hz.said")){
+      sessionStorage.setItem("hz.said","1");
       setTimeout(()=>toast("App enregistrée — marche sans serveur"),700);
     }
   }
