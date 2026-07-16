@@ -1,6 +1,6 @@
 // HORIZON — service worker
 // Garde une copie de l'app sur l'appareil pour qu'elle marche sans serveur.
-const CACHE = "horizon-v4";
+const CACHE = "horizon-v5";
 const FILES = ["./", "./index.html", "./manifest.json", "./icon.svg"];
 
 // Installation : on télécharge et on garde tout.

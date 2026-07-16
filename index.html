@@ -170,6 +170,76 @@ p.sub{margin:0 0 18px;color:var(--mute);font-size:14px}
 .dt b{font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;word-break:break-word}
 .tag{background:var(--ink);color:var(--paper);font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:99px;letter-spacing:.6px;vertical-align:middle}
 
+/* panier */
+.cart{display:flex;flex-direction:column;gap:9px}
+.cl{background:var(--paper-2);border:1.5px solid #DCD8CE;border-radius:12px;padding:10px}
+.cg{display:flex;gap:5px;margin-bottom:8px}
+.cg button{flex:1;border:1.5px solid #DCD8CE;background:var(--paper-2);border-radius:9px;
+  padding:7px 4px;font-size:12.5px;font-weight:700;color:var(--mute);display:flex;flex-direction:column;gap:1px;min-height:44px;align-items:center;justify-content:center}
+.cg button i{font-style:normal;font-size:10px;opacity:.75;font-weight:600}
+.cg button.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.cq{display:flex;align-items:center;gap:8px}
+.cq button{width:40px;height:40px;border:1.5px solid #DCD8CE;background:var(--paper-2);
+  border-radius:9px;font-size:19px;font-weight:700;color:var(--ink);line-height:1}
+.cq b{min-width:30px;text-align:center;font-size:17px;font-variant-numeric:tabular-nums}
+.cq .cx{margin-left:auto;border-color:transparent;color:var(--mute);font-size:15px}
+.cs{text-align:right;font-size:13px;font-weight:700;color:var(--mute);margin-top:6px;font-variant-numeric:tabular-nums}
+.hint{font-size:12px;color:var(--mute);margin-top:7px;line-height:1.45}
+.warn{background:#FDF2DC;color:#8A6100;border-radius:9px;padding:9px 11px;font-size:12.5px;font-weight:600;margin-top:8px}
+.tot s{opacity:.6}
+
+/* stock */
+.stk{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.sg{background:var(--paper-2);border:1.5px solid #E4E1DA;border-radius:11px;padding:11px 8px;text-align:center}
+.sg span{display:block;font-size:11px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.4px}
+.sg b{display:block;font-size:25px;font-weight:800;margin:3px 0 1px;font-variant-numeric:tabular-nums}
+.sg u{display:block;font-size:10.5px;color:var(--mute);text-decoration:none}
+.sg.low{border-color:#E8A33D;background:#FDF9F1}
+.sg.low b{color:#8A6100}
+.sg.ko{border-color:#D9534F;background:#FDF3F3}
+.sg.ko b{color:#C0392B}
+
+/* facture */
+#fmodal{position:fixed;inset:0;background:rgba(10,10,10,.6);z-index:120;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;padding:18px;backdrop-filter:blur(3px)}
+.fwrap{max-width:460px;margin:0 auto;padding-bottom:20px}
+.fsheet{background:#fff;border-radius:14px;padding:24px;color:#0A0A0A;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+.fh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.flogo{font-size:19px;font-weight:800;letter-spacing:2px}
+.flogo sup{font-size:8px;font-weight:700;vertical-align:super}
+.fmeta{text-align:right;display:flex;flex-direction:column;gap:1px}
+.fmeta b{font-size:11px;font-weight:800;letter-spacing:1.4px;color:#767676}
+.fmeta span{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.fbar{height:2.5px;background:#0A0A0A;margin:14px 0 16px}
+.finfo{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin-bottom:16px}
+.finfo span{display:block;font-size:9.5px;font-weight:700;color:#767676;text-transform:uppercase;letter-spacing:.5px}
+.finfo b{font-size:13px;font-weight:600}
+.ftab{width:100%;border-collapse:collapse;margin-bottom:14px}
+.ftab th{font-size:9.5px;font-weight:800;color:#767676;text-transform:uppercase;letter-spacing:.5px;
+  text-align:left;padding:0 0 7px;border-bottom:1.5px solid #0A0A0A}
+.ftab td{font-size:13.5px;padding:9px 0;border-bottom:1px solid #EDEBE5;font-weight:600}
+.ftab .c{text-align:center}.ftab .r{text-align:right;font-variant-numeric:tabular-nums}
+.ftot{display:flex;flex-direction:column;gap:5px}
+.fr{display:flex;justify-content:space-between;font-size:13.5px}
+.fr span{color:#767676;font-weight:600}
+.fr b{font-weight:700;font-variant-numeric:tabular-nums}
+.fr.big{border-top:1.5px solid #0A0A0A;margin-top:7px;padding-top:9px;font-size:16px}
+.fr.big span{color:#0A0A0A;font-weight:800;letter-spacing:.4px}
+.fr.big b{font-size:19px;font-weight:800}
+.fnote{margin-top:16px;padding:10px 12px;background:#F2F2F0;border-radius:8px;font-size:12px;color:#4A4A4A;font-weight:600}
+.ffoot{margin-top:14px;text-align:center;font-size:10px;color:#9A9A9A;font-weight:600}
+.fbtns{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+
+@media print{
+  body *{visibility:hidden}
+  #fmodal,#fmodal *{visibility:visible}
+  #fmodal{position:absolute;inset:0;background:#fff;padding:0;backdrop-filter:none;overflow:visible}
+  .fwrap{max-width:100%;padding:0}
+  .fsheet{border-radius:0;padding:0;box-shadow:none}
+  .fbtns{display:none}
+}
+
 /* mouvements financiers */
 .mv{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #EDEBE5}
 .mv:last-child{border-bottom:0;padding-bottom:0}
@@ -230,6 +300,28 @@ p.sub{margin:0 0 18px;color:var(--mute);font-size:14px}
 <script>
 "use strict";
 const PRIX=[4000,5000,5500], FRAIS=[0,1000,1500,2000,2500];
+// Gammes : Standard 4000, Premium 5000, Rare 5500 (pièces rares).
+const GAMME=[{k:"STD",n:"Standard",p:4000},{k:"PRM",n:"Premium",p:5000},{k:"RAR",n:"Rare",p:5500}];
+const gInfo=k=>GAMME.find(g=>g.k===k)||GAMME[0];
+const gDeP=p=>(GAMME.find(g=>g.p===+p)||GAMME[0]).k;
+// Promos. calc(lignes) -> total articles, ou null si la promo ne s'applique pas.
+const PROMO=[
+  {k:"",     n:"Aucune", desc:""},
+  {k:"TRIO", n:"Trio", desc:"2 Standards + 1 Standard à moitié prix = 10 000",
+   calc:L=>{const n=nbG(L,"STD");return n>=3?10000+(n-3)*4000+autresG(L,"STD"):null;}},
+  {k:"MIX",  n:"Duo Mix", desc:"1 Premium + 1 Standard = 9 000 · livraison offerte",
+   calc:L=>{const s=nbG(L,"STD"),p=nbG(L,"PRM");return (s>=1&&p>=1)?9000+(s-1)*4000+(p-1)*5000+autresG(L,"STD","PRM"):null;}},
+  {k:"FLASH",n:"Flash 3K", desc:"Tout à 3 000, quelle que soit la gamme",
+   calc:L=>nbTot(L)>0?nbTot(L)*3000:null},
+  {k:"4P3",  n:"4 pour 3", desc:"3 achetés = 1 offert (le moins cher offert)",
+   calc:L=>{const u=uPrix(L);if(u.length<4)return null;
+     u.sort((a,b)=>b-a);let t=0;u.forEach((p,i)=>{if((i+1)%4!==0)t+=p;});return t;}}
+];
+const pInfo=k=>PROMO.find(p=>p.k===k)||PROMO[0];
+const nbTot=L=>L.reduce((s,l)=>s+(+l.q||0),0);
+const nbG=(L,g)=>L.filter(l=>l.g===g).reduce((s,l)=>s+(+l.q||0),0);
+const autresG=(L,...gs)=>L.filter(l=>!gs.includes(l.g)).reduce((s,l)=>s+(+l.q||0)*(+l.p||0),0);
+const uPrix=L=>{const a=[];L.forEach(l=>{for(let i=0;i<(+l.q||0);i++)a.push(+l.p||0);});return a;};
 const PAY=["Wave","Orange Money","Espèces"], LIVR=["Livreur 1","Livreur 2","Livreur 3"];
 const PAYS=["Espèces","Virement","Wave","Orange Money","Autre"];
 // Espèces et Wave en tête : ce sont tes moyens les plus fréquents.
@@ -240,14 +332,22 @@ const SKEY={"En attente":"attente","En préparation":"prep","Chez le livreur":"c
 const K="caps.v1";
 
 // ---------- State ----------
-let S={orders:[],deps:[],buys:[],goal:1000000,seq:0,dseq:0,bseq:0};
+let S={orders:[],deps:[],buys:[],stock:{STD:0,PRM:0,RAR:0},adj:[],goal:1000000,seq:0,dseq:0,bseq:0};
 try{const r=localStorage.getItem(K); if(r){const p=JSON.parse(r); if(p&&Array.isArray(p.orders))S=Object.assign(S,p);}}catch(e){}
 // Migration : les anciennes commandes reçoivent les nouveaux champs sans rien perdre.
 if(!Array.isArray(S.deps))S.deps=[];
 if(!Array.isArray(S.buys))S.buys=[];
+if(!Array.isArray(S.adj))S.adj=[];
+if(!S.stock||typeof S.stock!=="object")S.stock={STD:0,PRM:0,RAR:0};
+["STD","PRM","RAR"].forEach(k=>{if(typeof S.stock[k]!=="number")S.stock[k]=0;});
 if(typeof S.dseq!=="number")S.dseq=S.deps.length;
 if(typeof S.bseq!=="number")S.bseq=S.buys.length;
 S.orders.forEach(o=>{
+  // Ancien format (qte + prix uniques) -> panier d'une seule ligne. Rien n'est perdu.
+  if(!Array.isArray(o.lignes)){
+    o.lignes=[{g:gDeP(o.prix),p:+o.prix||4000,q:+o.qte||1}];
+  }
+  if(o.promo===undefined)o.promo="";
   if(o.adresse===undefined) o.adresse="";
   if(o.avance===undefined)  o.avance=0;
   if(o.paySolde===undefined)o.paySolde="Espèces";
@@ -268,9 +368,24 @@ function toast(m){const t=document.getElementById("toast");t.textContent=m;t.cla
 document.getElementById("today").textContent=new Date().toLocaleDateString("fr-FR",{day:"2-digit",month:"short"});
 
 // ---------- Business rules ----------
-const isFree=(o)=>!o.hors && o.qte>=2;               // Dakar + 2 articles → gratuit
+// --- Panier -----------------------------------------------------------
+const lignes=(o)=>Array.isArray(o.lignes)?o.lignes:[{g:gDeP(o.prix),p:+o.prix||4000,q:+o.qte||1}];
+const qteTot=(o)=>nbTot(lignes(o));
+const brut=(o)=>lignes(o).reduce((s,l)=>s+(+l.q||0)*(+l.p||0),0);
+// Prix des articles après promo. Si la promo ne s'applique pas, on garde le prix normal.
+const articles=(o)=>{
+  const pr=pInfo(o.promo);
+  if(pr.k&&pr.calc){const v=pr.calc(lignes(o));if(v!==null)return v;}
+  return brut(o);
+};
+const remise=(o)=>Math.max(0,brut(o)-articles(o));
+// Duo Mix offre la livraison. Sinon règle habituelle : Dakar + 2 articles = gratuit.
+// Duo Mix : la livraison est offerte dès que la promo s'applique — même si 9 000
+// est aussi le prix normal (5 000 + 4 000), l'offre reste la livraison.
+const mixOK=(o)=>o.promo==="MIX"&&pInfo("MIX").calc(lignes(o))!==null;
+const isFree=(o)=>mixOK(o)||(!o.hors && qteTot(o)>=2);
 const frais=(o)=>isFree(o)?0:(+o.frais||0);
-const total=(o)=>o.qte*o.prix+frais(o);
+const total=(o)=>articles(o)+frais(o);
 // L'avance ne peut jamais dépasser le total ni être négative.
 const avance=(o)=>Math.max(0,Math.min(+o.avance||0,total(o)));
 const reste=(o)=>total(o)-avance(o);
@@ -290,6 +405,15 @@ const duRest=(o)=>{                                   // ce qu'on te doit encore
   return total(o)-encaisse(o);
 };
 const coutBuy=(b)=>(+b.qte||0)*(+b.pu||0)+(+b.transport||0)+(+b.autres||0);
+
+// --- Stock ------------------------------------------------------------
+// Vendu = tout ce qui est sorti (hors commandes annulées).
+const vendu=(g)=>S.orders.filter(o=>o.statut!=="Annulée")
+  .reduce((s,o)=>s+lignes(o).filter(l=>l.g===g).reduce((a,l)=>a+(+l.q||0),0),0);
+// Ajustements manuels après comptage physique (casse, cadeau, perte…).
+const ajust=(g)=>S.adj.filter(a=>a.g===g).reduce((s,a)=>s+(+a.d||0),0);
+const reste_stock=(g)=>(+S.stock[g]||0)+ajust(g)-vendu(g);
+const stockBas=(g)=>reste_stock(g)<=3;
 const inMonth=(d,m)=>String(d||"").slice(0,7)===m;
 const curMonth=()=>today().slice(0,7);
 
@@ -317,7 +441,7 @@ function mouvements(m){
     sub:o.nom+" · "+(o.statut==="Livrée"?"soldé":"avance"),v:encaisse(o)}));
   S.buys.filter(b=>inMonth(b.date,m)).forEach(b=>L.push({
     d:b.date,t:"out",lab:"Achat marchandise",
-    sub:b.qte+" pièce"+(b.qte>1?"s":"")+(b.four?" · "+b.four:""),v:coutBuy(b)}));
+    sub:b.qte+" "+gInfo(b.g||"STD").n+(b.four?" · "+b.four:""),v:coutBuy(b)}));
   S.deps.filter(x=>inMonth(x.date,m)).forEach(x=>L.push({
     d:x.date,t:"out",lab:x.desc||x.cat,sub:x.cat+" · "+x.moy,v:+x.montant||0}));
   return L.sort((a,b)=>b.d<a.d?-1:b.d>a.d?1:0);
@@ -408,12 +532,17 @@ function vAcc(){
 }
 
 let E=null;   // commande en cours de modification (null = création)
-let D={hors:false,qte:1,prix:5000,frais:1000,paiement:"Wave",livreur:"Livreur 1",statut:"En attente",
-       avance:"",paySolde:"Espèces",resa:false,dateResa:"",adresse:""};
+const D0=()=>({hors:false,frais:1000,paiement:"Wave",livreur:"Livreur 1",statut:"En attente",
+  avance:"",paySolde:"Espèces",resa:false,dateResa:"",adresse:"",promo:"",
+  lignes:[{g:"STD",p:4000,q:1}]});
+let D=D0();
 function vNew(){
   const num=E?E.id:"CMD-"+String(S.seq+1).padStart(6,"0");
-  const free=isFree(D), art=D.qte*D.prix, fr=frais(D), tt=art+fr;
+  const br=brut(D), art=articles(D), rm=remise(D);
+  const free=isFree(D), fr=frais(D), tt=art+fr, nb=nbTot(D.lignes);
   const av=Math.max(0,Math.min(+D.avance||0,tt)), rs=tt-av;
+  const pr=pInfo(D.promo);
+  const promoKO=D.promo&&pr.calc&&pr.calc(D.lignes)===null;
   return `<div class="page">
     <h2 class="t">${E?"Modifier la vente":"Nouvelle vente"}</h2>
     <p class="sub">${num} · ${E?dmy(E.date):dmy(today())}</p>
@@ -423,18 +552,38 @@ function vNew(){
       <div class="f"><label>Ville</label><input id="i-ville" placeholder="Ex : Dakar" autocomplete="off" value="${esc(D.ville||"")}"></div>
       <div class="f"><label>Adresse <i style="font-weight:400;text-transform:none">(facultatif)</i></label><input id="i-adr" placeholder="Quartier, repère" autocomplete="off" value="${esc(D.adresse||"")}"></div>
     </div>
-    <div class="f"><label>Zone de livraison</label>
-      <div class="seg"><button onclick="setH(0)" class="${!D.hors?"on":""}">Dakar ville</button><button onclick="setH(1)" class="${D.hors?"on":""}">Hors Dakar</button></div></div>
-    <div class="f2">
-      <div class="f"><label>Quantité</label><input id="i-qte" type="number" inputmode="numeric" min="1" value="${D.qte}" onchange="setQ(this.value)" oninput="setQ(this.value)"></div>
-      <div class="f"><label>Prix unitaire</label><select id="i-prix" onchange="setP(this.value)">${PRIX.map(p=>`<option value="${p}" ${D.prix==p?"selected":""}>${fmt(p)} F</option>`).join("")}</select></div>
+
+    <div class="f"><label>Articles · ${nb} casquette${nb>1?"s":""}</label>
+      <div class="cart">
+        ${D.lignes.map((l,i)=>`<div class="cl">
+          <div class="cg">${GAMME.map(g=>`<button onclick="setLg(${i},'${g.k}')" class="${l.g===g.k?"on":""}">${g.n}<i>${fmt(g.p)}</i></button>`).join("")}</div>
+          <div class="cq">
+            <button onclick="setLq(${i},-1)">−</button>
+            <b>${l.q}</b>
+            <button onclick="setLq(${i},1)">+</button>
+            ${D.lignes.length>1?`<button class="cx" onclick="delL(${i})">✕</button>`:""}
+          </div>
+          <div class="cs">${fmt(l.q*l.p)} F</div>
+        </div>`).join("")}
+      </div>
+      <button class="btn g" style="margin-top:8px;min-height:46px" onclick="addL()">+ Ajouter un article</button>
     </div>
-    ${free?`<div class="free">✅ Livraison offerte — Dakar, ${D.qte} articles</div>`:
+
+    <div class="f"><label>Promotion</label>
+      <div class="cats">${PROMO.map(p=>`<button onclick="setPromo('${p.k}')" class="${D.promo===p.k?"on":""}">${p.n}</button>`).join("")}</div>
+      ${D.promo?`<div class="hint">${pr.desc}</div>`:""}
+      ${promoKO?`<div class="warn">⚠️ Cette promo ne s'applique pas à ce panier — prix normal appliqué</div>`:""}
+    </div>
+
+    ${free?`<div class="free">✅ Livraison offerte${mixOK(D)?" — Duo Mix":" — Dakar, "+nb+" articles"}</div>`:
       `<div class="f"><label>Frais de livraison${D.hors?" (part entreprise)":""}</label>
         <div class="seg pill">${FRAIS.map(f=>`<button onclick="setF(${f})" class="${D.frais==f?"on":""}">${f===0?"Offerte":fmt(f)}</button>`).join("")}</div></div>`}
+    <div class="f"><label>Zone de livraison</label>
+      <div class="seg"><button onclick="setH(0)" class="${!D.hors?"on":""}">Dakar ville</button><button onclick="setH(1)" class="${D.hors?"on":""}">Hors Dakar</button></div></div>
     ${D.hors?`<div class="free" style="background:#EDEDEB;color:#3A3A3A">🚚 Le transport vers la ville est payé par le client</div>`:""}
+
     <div class="tot"><div><span>Total à payer</span><br><b>${money(tt)}</b></div>
-      <div style="text-align:right;font-size:12.5px;color:#9A9A9A;line-height:1.7">${D.qte} × ${fmt(D.prix)}<br>+ ${fmt(fr)} livraison</div></div>
+      <div style="text-align:right;font-size:12.5px;color:#9A9A9A;line-height:1.7">${nb} article${nb>1?"s":""} · ${fmt(art)}${rm>0?`<br><s>${fmt(br)}</s> −${fmt(rm)}`:""}<br>+ ${fmt(fr)} livraison</div></div>
 
     <div class="f"><label>Avance / Acompte versé <i style="font-weight:400;text-transform:none">(facultatif)</i></label>
       <input id="i-av" type="number" inputmode="numeric" min="0" placeholder="0" value="${D.avance}" onchange="setA(this.value)" oninput="setA(this.value)"></div>
@@ -464,13 +613,16 @@ function vNew(){
 function keep(){const g=id=>{const e=document.getElementById(id);return e?e.value:"";};
   D.nom=g("i-nom");D.tel=g("i-tel");D.ville=g("i-ville");D.adresse=g("i-adr");}
 window.setH=v=>{keep();D.hors=!!v;render();};
-window.setQ=v=>{const n=Math.max(1,parseInt(v)||1);if(n===D.qte)return;keep();D.qte=n;render();};
-window.setP=v=>{keep();D.prix=+v;render();};
 window.setF=v=>{keep();D.frais=+v;render();};
 window.setR=v=>{keep();D.resa=!!v;render();};
+window.setPromo=k=>{keep();D.promo=D.promo===k?"":k;render();};
+window.addL=()=>{keep();D.lignes.push({g:"STD",p:4000,q:1});render();};
+window.delL=i=>{keep();if(D.lignes.length>1)D.lignes.splice(i,1);render();};
+window.setLg=(i,g)=>{keep();const info=gInfo(g);D.lignes[i].g=g;D.lignes[i].p=info.p;render();};
+window.setLq=(i,d)=>{keep();const l=D.lignes[i];l.q=Math.max(1,(+l.q||1)+d);render();};
 window.setA=v=>{
   keep();
-  const tt=D.qte*D.prix+frais(D);
+  const tt=articles(D)+frais(D);
   let n=v===""?"":Math.max(0,parseInt(String(v).replace(/[^\d]/g,""))||0);
   if(n!==""&&n>tt){n=tt;toast("L'avance ne peut pas dépasser "+money(tt));}
   if(String(n)===String(D.avance))return;
@@ -487,10 +639,13 @@ window.add=()=>{
   document.querySelectorAll(".err").forEach(e=>e.classList.remove("err"));
   if(bad.length){bad.forEach(i=>document.getElementById(i).classList.add("err"));
     document.getElementById(bad[0]).focus();return toast("Remplis le nom, le téléphone et la ville");}
-  const tt=D.qte*D.prix+frais(D);
+  const tt=articles(D)+frais(D);
   const av=Math.max(0,Math.min(+D.avance||0,tt));
+  const L=D.lignes.map(l=>({g:l.g,p:+l.p,q:Math.max(1,+l.q||1)}));
   const body={nom:D.nom.trim(),tel:D.tel.trim(),ville:D.ville.trim(),adresse:(D.adresse||"").trim(),
-    hors:D.hors,qte:D.qte,prix:D.prix,frais:D.frais,avance:av,paySolde:D.paySolde,
+    hors:D.hors,lignes:L,promo:D.promo||"",
+    qte:nbTot(L),prix:L[0].p,                       // compat : anciens champs tenus à jour
+    frais:D.frais,avance:av,paySolde:D.paySolde,
     resa:D.resa,dateResa:D.resa?(D.dateResa||""):"",
     paiement:D.paiement,livreur:D.livreur,statut:D.statut};
   if(E){
@@ -498,37 +653,114 @@ window.add=()=>{
     const o=S.orders.find(x=>x.id===E.id);
     if(!o){E=null;return toast("Commande introuvable");}
     Object.assign(o,body);
-    save();E=null;
-    D={hors:false,qte:1,prix:5000,frais:1000,paiement:"Wave",livreur:"Livreur 1",statut:"En attente",
-       avance:"",paySolde:"Espèces",resa:false,dateResa:"",adresse:""};
+    save();E=null;D=D0();
     toast("Commande modifiée");go("his");return;
   }
   S.seq++;
   S.orders.unshift(Object.assign({id:"CMD-"+String(S.seq).padStart(6,"0"),date:today()},body));
   save();
-  D={hors:false,qte:1,prix:5000,frais:1000,paiement:D.paiement,livreur:D.livreur,statut:"En attente",
-     avance:"",paySolde:"Espèces",resa:false,dateResa:"",adresse:""};
+  const pay=D.paiement,liv=D.livreur;
+  D=D0();D.paiement=pay;D.livreur=liv;
   toast("Vente enregistrée");go("his");
 };
+// ---------- Facture ----------
+// Pas de nom du client : seul le n° de commande identifie la facture.
+window.fac=id=>{
+  const o=S.orders.find(x=>x.id===id);
+  if(!o)return toast("Commande introuvable");
+  const av=avance(o),rs=reste(o),rm=remise(o);
+  const rows=lignes(o).map(l=>`<tr><td>${gInfo(l.g).n}</td><td class="c">${l.q}</td><td class="r">${fmt(l.p)}</td><td class="r">${fmt(l.q*l.p)}</td></tr>`).join("");
+  const d=document.createElement("div");d.id="fmodal";
+  d.innerHTML=`<div class="fwrap">
+    <div class="fsheet" id="fsheet">
+      <div class="fh"><div class="flogo">HORIZON<sup>™</sup></div>
+        <div class="fmeta"><b>FACTURE</b><span>${o.id}</span><span>${dmy(o.date)}</span></div></div>
+      <div class="fbar"></div>
+      <div class="finfo">
+        <div><span>Ville</span><b>${esc(o.ville)}${o.hors?" · Hors Dakar":""}</b></div>
+        ${o.adresse?`<div><span>Adresse</span><b>${esc(o.adresse)}</b></div>`:""}
+        <div><span>Statut</span><b>${o.statut}</b></div>
+        ${o.resa?`<div><span>Réservation</span><b>Oui${o.dateResa?" · retrait "+dmy(o.dateResa):""}</b></div>`:""}
+      </div>
+      <table class="ftab"><thead><tr><th>Article</th><th class="c">Qté</th><th class="r">P.U.</th><th class="r">Total</th></tr></thead>
+        <tbody>${rows}</tbody></table>
+      <div class="ftot">
+        ${rm>0?`<div class="fr"><span>Sous-total</span><b>${fmt(brut(o))} F</b></div>
+        <div class="fr"><span>Promotion ${pInfo(o.promo).n}</span><b>− ${fmt(rm)} F</b></div>`:""}
+        <div class="fr"><span>Articles</span><b>${fmt(articles(o))} F</b></div>
+        <div class="fr"><span>Livraison</span><b>${frais(o)===0?"Offerte":fmt(frais(o))+" F"}</b></div>
+        <div class="fr big"><span>TOTAL</span><b>${fmt(total(o))} F</b></div>
+        ${av>0?`<div class="fr"><span>Avance versée</span><b>− ${fmt(av)} F</b></div>
+        <div class="fr big"><span>${rs>0?"RESTE À PAYER":"SOLDÉ"}</span><b>${rs>0?fmt(rs)+" F":"0 F"}</b></div>`:""}
+      </div>
+      ${rs>0?`<div class="fnote">Solde à régler par ${esc(o.paySolde||"Espèces")} à la livraison.</div>`:`<div class="fnote">Merci de votre confiance.</div>`}
+      <div class="ffoot">HORIZON™ · Dakar · Facture générée le ${dmy(today())}</div>
+    </div>
+    <div class="fbtns">
+      <button class="btn" onclick="facShare('${o.id}')">Envoyer / Partager</button>
+      <button class="btn g" onclick="window.print()">Imprimer</button>
+      <button class="btn g" onclick="document.getElementById('fmodal').remove()">Fermer</button>
+    </div>
+  </div>`;
+  document.body.appendChild(d);
+  d.onclick=e=>{if(e.target===d)d.remove();};
+};
+// Partage : on rend la facture en image, iOS propose alors WhatsApp.
+window.facShare=async id=>{
+  const o=S.orders.find(x=>x.id===id);
+  const el=document.getElementById("fsheet");
+  if(!el)return;
+  try{
+    const png=await sheetPNG(el);
+    const f=new File([png],"facture-"+id+".png",{type:"image/png"});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){
+      await navigator.share({files:[f],title:"Facture "+id});
+      return;
+    }
+    dl("facture-"+id+".png",png,"image/png");
+    toast("Facture enregistrée dans tes fichiers");
+  }catch(e){
+    if(e&&e.name==="AbortError")return;      // partage annulé par l'utilisateur
+    toast("Partage impossible — utilise Imprimer");
+  }
+};
+// Rendu de la facture en PNG, sans librairie externe.
+function sheetPNG(el){
+  return new Promise((res,rej)=>{
+    const r=el.getBoundingClientRect(), W=Math.ceil(r.width), H=Math.ceil(r.height), S2=2;
+    const clone=el.cloneNode(true);
+    clone.style.margin="0";
+    const css=[...document.styleSheets].map(s=>{try{return [...s.cssRules].map(x=>x.cssText).join("")}catch(e){return ""}}).join("");
+    const html=`<div xmlns="http://www.w3.org/1999/xhtml" style="width:${W}px;background:#fff">${clone.outerHTML}</div>`;
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
+      <foreignObject width="100%" height="100%"><style>${css}</style>${html}</foreignObject></svg>`;
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement("canvas");c.width=W*S2;c.height=H*S2;
+      const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);
+      x.scale(S2,S2);x.drawImage(img,0,0);
+      c.toBlob(b=>b?res(b):rej(new Error("blob")),"image/png");
+    };
+    img.onerror=()=>rej(new Error("svg"));
+    img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+  });
+}
+
 window.edit=id=>{
   const o=S.orders.find(x=>x.id===id);
   if(!o)return toast("Commande introuvable");
   E=o;
-  D={nom:o.nom,tel:o.tel,ville:o.ville,adresse:o.adresse||"",hors:o.hors,qte:o.qte,prix:o.prix,
+  D={nom:o.nom,tel:o.tel,ville:o.ville,adresse:o.adresse||"",hors:o.hors,
+     lignes:lignes(o).map(l=>({g:l.g,p:+l.p,q:+l.q})),promo:o.promo||"",
      frais:o.frais,avance:o.avance||"",paySolde:o.paySolde||"Espèces",resa:!!o.resa,
      dateResa:o.dateResa||"",paiement:o.paiement,livreur:o.livreur,statut:o.statut};
   go("new");
 };
-window.cancelEdit=()=>{
-  E=null;
-  D={hors:false,qte:1,prix:5000,frais:1000,paiement:"Wave",livreur:"Livreur 1",statut:"En attente",
-     avance:"",paySolde:"Espèces",resa:false,dateResa:"",adresse:""};
-  go("his");
-};
+window.cancelEdit=()=>{E=null;D=D0();go("his");};
 
 // ---------- Finances ----------
 let fm=null;              // mois affiché (null = mois courant)
-let FD=null, FB=null;     // formulaire dépense / achat ouvert
+let FD=null, FB=null, FS=null;   // formulaire dépense / achat / stock ouvert
 const moisLab=m=>{const[y,mo]=m.split("-");
   return new Date(+y,+mo-1,1).toLocaleDateString("fr-FR",{month:"long",year:"numeric"});};
 function moisDispo(){
@@ -541,6 +773,7 @@ function moisDispo(){
 function vFin(){
   if(FD)return vDep();
   if(FB)return vBuy();
+  if(FS)return vStk();
   const m=fm||curMonth(), f=fin(m), mv=mouvements(m), ms=moisDispo();
   const cats=Object.entries(f.parCat).sort((a,b)=>b[1]-a[1]);
   const mx=cats.length?cats[0][1]:1;
@@ -560,6 +793,13 @@ function vFin(){
       <div class="kpi a"><div class="k">⏳ Reste à encaisser</div><div class="v">${money(f.du)}</div></div>
       <div class="kpi d"><div class="k">↑ Sorties</div><div class="v">${money(f.out)}</div></div>
       <div class="kpi ${f.net>=0?"":"r"}"><div class="k">📊 Bénéfice estimé</div><div class="v">${money(f.net)}</div></div>
+    </div>
+
+    <div class="card"><h3>Stock</h3>
+      <div class="stk">${GAMME.map(g=>{const r=reste_stock(g.k);return `<div class="sg ${r<=0?"ko":(stockBas(g.k)?"low":"")}">
+        <span>${g.n}</span><b>${r}</b><u>${vendu(g.k)} vendue${vendu(g.k)>1?"s":""}</u></div>`;}).join("")}</div>
+      ${GAMME.some(g=>stockBas(g.k))?`<div class="warn" style="margin-top:10px">⚠️ Stock faible : ${GAMME.filter(g=>stockBas(g.k)).map(g=>g.n+" ("+reste_stock(g.k)+")").join(" · ")}</div>`:""}
+      <button class="btn g" style="margin-top:11px" onclick="openStk()">Ajuster le stock</button>
     </div>
 
     <div class="card"><h3>Où part l'argent</h3>
@@ -584,13 +824,38 @@ function vFin(){
 }
 window.setM=m=>{fm=m;render();};
 
+
+// ---------- Stock ----------
+window.openStk=()=>{FS={STD:reste_stock("STD"),PRM:reste_stock("PRM"),RAR:reste_stock("RAR")};render();};
+function vStk(){
+  return `<div class="page">
+    <h2 class="t">Ajuster le stock</h2>
+    <p class="sub">Après un comptage physique : entre ce que tu as vraiment</p>
+    ${GAMME.map(g=>`<div class="f"><label>${g.n} · ${fmt(g.p)} F <i style="font-weight:400;text-transform:none">(app : ${reste_stock(g.k)})</i></label>
+      <input type="number" inputmode="numeric" min="0" value="${FS[g.k]}" oninput="FS['${g.k}']=this.value"></div>`).join("")}
+    <div class="hint">L'écart est enregistré comme un ajustement (casse, cadeau, perte, erreur de saisie). Tes ventes ne bougent pas.</div>
+    <button class="btn" style="margin-top:12px" onclick="saveStk()">Enregistrer le comptage</button>
+    <button class="btn g" style="margin-top:9px" onclick="closeF()">Annuler</button>
+  </div>`;
+}
+window.saveStk=()=>{
+  let n=0;
+  GAMME.forEach(g=>{
+    const v=Math.max(0,parseInt(FS[g.k])||0), cur=reste_stock(g.k), d=v-cur;
+    if(d!==0){S.adj.push({id:"ADJ-"+Date.now()+"-"+g.k,date:today(),g:g.k,d:d});n++;}
+  });
+  save();FS=null;
+  toast(n?n+" ajustement(s) enregistré(s)":"Aucun écart");
+  render();
+};
+
 // ---------- Formulaire dépense ----------
 window.openDep=(id)=>{
   const d=id?S.deps.find(x=>x.id===id):null;
   FD=d?{...d}:{id:null,date:today(),cat:"",montant:"",desc:"",moy:""};
   render();
 };
-window.closeF=()=>{FD=null;FB=null;render();};
+window.closeF=()=>{FD=null;FB=null;FS=null;render();};
 function vDep(){
   const m=(fm||curMonth()), f=fin(m);
   const mt=Math.max(0,parseInt(String(FD.montant).replace(/[^\d]/g,""))||0);
@@ -631,7 +896,7 @@ window.delDep=id=>confirmBox("Supprimer cette dépense ?","Elle sera retirée de
 // ---------- Formulaire achat ----------
 window.openBuy=(id)=>{
   const b=id?S.buys.find(x=>x.id===id):null;
-  FB=b?{...b}:{id:null,date:today(),four:"",qte:"",pu:"",transport:"",autres:"",moy:""};
+  FB=b?{...b}:{id:null,date:today(),four:"",g:"STD",qte:"",pu:"",transport:"",autres:"",moy:""};
   render();
 };
 function vBuy(){
@@ -642,6 +907,8 @@ function vBuy(){
     <h2 class="t">${FB.id?"Modifier l'achat":"Nouvel achat"}</h2><p class="sub">Marchandise · ${dmy(FB.date)}</p>
     <div class="f"><label>Fournisseur <i style="font-weight:400;text-transform:none">(facultatif)</i></label>
       <input id="b-fr" placeholder="Ex : Diallo Import" value="${esc(FB.four)}" oninput="FB.four=this.value"></div>
+    <div class="f"><label>Gamme</label>
+      <div class="seg pill">${GAMME.map(g=>`<button onclick="setBg('${g.k}')" class="${(FB.g||"STD")===g.k?"on":""}">${g.n}</button>`).join("")}</div></div>
     <div class="f2">
       <div class="f"><label>Quantité</label><input type="number" inputmode="numeric" min="0" placeholder="0" value="${FB.qte}" oninput="FB.qte=this.value" onchange="render()"></div>
       <div class="f"><label>Coût unitaire</label><input type="number" inputmode="numeric" min="0" placeholder="0" value="${FB.pu}" oninput="FB.pu=this.value" onchange="render()"></div>
@@ -662,19 +929,31 @@ function vBuy(){
   </div>`;
 }
 window.setBm=x=>{const e=document.getElementById("b-fr");if(e)FB.four=e.value;FB.moy=x;render();};
+window.setBg=g=>{const e=document.getElementById("b-fr");if(e)FB.four=e.value;FB.g=g;render();};
 window.saveBuy=()=>{
   const e=document.getElementById("b-fr");if(e)FB.four=e.value;
   const q=Math.max(0,parseInt(FB.qte)||0), pu=Math.max(0,parseInt(FB.pu)||0);
   if(!q)return toast("Entre la quantité");
   if(!pu)return toast("Entre le coût unitaire");
   if(!FB.moy)return toast("Choisis le moyen de paiement");
-  const body={date:FB.date||today(),four:(FB.four||"").trim(),qte:q,pu:pu,
+  const g=FB.g||"STD";
+  const body={date:FB.date||today(),four:(FB.four||"").trim(),g:g,qte:q,pu:pu,
     transport:Math.max(0,parseInt(FB.transport)||0),autres:Math.max(0,parseInt(FB.autres)||0),moy:FB.moy};
-  if(FB.id){const b=S.buys.find(x=>x.id===FB.id);if(b)Object.assign(b,body);toast("Achat modifié");}
-  else{S.bseq++;S.buys.unshift(Object.assign({id:"ACH-"+String(S.bseq).padStart(5,"0")},body));toast("Achat enregistré");}
+  if(FB.id){
+    const b=S.buys.find(x=>x.id===FB.id);
+    if(b){S.stock[b.g||"STD"]=Math.max(0,(+S.stock[b.g||"STD"]||0)-(+b.qte||0));  // on retire l'ancien
+          Object.assign(b,body);}
+    S.stock[g]=(+S.stock[g]||0)+q;                                                 // on remet le nouveau
+    toast("Achat modifié");
+  }
+  else{S.bseq++;S.buys.unshift(Object.assign({id:"ACH-"+String(S.bseq).padStart(5,"0")},body));
+       S.stock[g]=(+S.stock[g]||0)+q;                                              // l'achat alimente le stock
+       toast("Achat enregistré");}
   save();FB=null;render();
 };
-window.delBuy=id=>confirmBox("Supprimer cet achat ?","Il sera retiré de tes comptes.",()=>{
+window.delBuy=id=>confirmBox("Supprimer cet achat ?","Il sera retiré de tes comptes et du stock.",()=>{
+  const b=S.buys.find(x=>x.id===id);
+  if(b)S.stock[b.g||"STD"]=Math.max(0,(+S.stock[b.g||"STD"]||0)-(+b.qte||0));
   S.buys=S.buys.filter(x=>x.id!==id);save();FB=null;toast("Achat supprimé");render();});
 
 let q="",fs="Toutes";
@@ -697,8 +976,9 @@ function vHis(){
       <div class="dt">
         <div><span>Ville</span><b>${esc(o.ville)}${o.hors?" 🚚":""}</b></div>
         ${o.adresse?`<div><span>Adresse</span><b>${esc(o.adresse)}</b></div>`:""}
-        <div><span>Articles</span><b>${o.qte} × ${fmt(o.prix)} F</b></div>
-        <div><span>Sous-total</span><b>${money(o.qte*o.prix)}</b></div>
+        <div style="grid-column:1/-1"><span>Articles</span><b>${lignes(o).map(l=>l.q+" × "+gInfo(l.g).n+" "+fmt(l.p)).join(" · ")}</b></div>
+        ${o.promo?`<div><span>Promotion</span><b>${pInfo(o.promo).n}${remise(o)>0?" (−"+fmt(remise(o))+")":""}</b></div>`:""}
+        <div><span>Sous-total</span><b>${money(articles(o))}</b></div>
         <div><span>Livraison</span><b>${isFree(o)?"Offerte":(frais(o)===0?"Offerte":money(frais(o)))}</b></div>
         <div><span>Total</span><b>${money(total(o))}</b></div>
         <div><span>Avance</span><b${av>0?' style="color:#1E7A3C"':''}>${money(av)}</b></div>
@@ -713,6 +993,7 @@ function vHis(){
       <div class="f"><span class="st ${SKEY[o.statut]}">${o.statut}</span>
         <div style="display:flex;gap:6px;align-items:center">
         <select onchange="chS('${o.id}',this.value)">${STAT.map(s=>`<option ${o.statut===s?"selected":""}>${s}</option>`).join("")}</select>
+        <button class="ed" onclick="fac('${o.id}')">Facture</button>
         <button class="ed" onclick="edit('${o.id}')">Modifier</button>
         <button class="x" onclick="del('${o.id}')">✕</button></div></div>
     </div>`;}).join(""):`<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
@@ -782,9 +1063,15 @@ function dl(name,txt,type){
 }
 window.expCSV=()=>{
   if(!S.orders.length)return toast("Aucune commande à exporter");
-  const H=["N° Commande","Date","Nom client","Téléphone","Ville","Adresse","Hors Dakar","Quantité","Prix unitaire","Total articles","Frais livraison","TOTAL A PAYER","Avance versée","Reste à payer","Mode paiement solde","Paiement","Livreur","Statut","Réservation","Date récupération"];
+  const H=["N° Commande","Date","Nom client","Téléphone","Ville","Adresse","Hors Dakar","Détail articles","Standard","Premium","Rare","Quantité","Sous-total","Promotion","Remise","Total articles","Frais livraison","TOTAL A PAYER","Avance versée","Reste à payer","Mode paiement solde","Paiement","Livreur","Statut","Réservation","Date récupération"];
   const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
-  const rows=S.orders.map(o=>[o.id,dmy(o.date),o.nom,o.tel,o.ville,o.adresse||"",o.hors?"OUI":"NON",o.qte,o.prix,o.qte*o.prix,frais(o),total(o),avance(o),reste(o),(reste(o)>0?(o.paySolde||""):"Soldé"),o.paiement,o.livreur,o.statut,o.resa?"OUI":"NON",o.dateResa?dmy(o.dateResa):""].map(q).join(";"));
+  const rows=S.orders.map(o=>{const L=lignes(o);
+    return [o.id,dmy(o.date),o.nom,o.tel,o.ville,o.adresse||"",o.hors?"OUI":"NON",
+    L.map(l=>l.q+"x"+gInfo(l.g).n+"@"+l.p).join(" + "),
+    nbG(L,"STD"),nbG(L,"PRM"),nbG(L,"RAR"),qteTot(o),brut(o),
+    o.promo?pInfo(o.promo).n:"",remise(o),articles(o),frais(o),total(o),
+    avance(o),reste(o),(reste(o)>0?(o.paySolde||""):"Soldé"),o.paiement,o.livreur,o.statut,
+    o.resa?"OUI":"NON",o.dateResa?dmy(o.dateResa):""].map(q).join(";");});
   dl("ventes-horizon-"+today()+".csv","\uFEFF"+H.map(q).join(";")+"\r\n"+rows.join("\r\n"),"text/csv");
   toast("Export CSV prêt");
 };
@@ -793,7 +1080,7 @@ window.expDep=()=>{
   const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
   const H=["Réf","Date","Type","Catégorie","Description","Quantité","Coût unitaire","Transport","Autres frais","MONTANT","Payé par"];
   const R=[];
-  S.buys.forEach(b=>R.push([b.id,dmy(b.date),"Achat","Marchandise",b.four||"",b.qte,b.pu,b.transport||0,b.autres||0,coutBuy(b),b.moy]));
+  S.buys.forEach(b=>R.push([b.id,dmy(b.date),"Achat",gInfo(b.g||"STD").n,b.four||"",b.qte,b.pu,b.transport||0,b.autres||0,coutBuy(b),b.moy]));
   S.deps.forEach(d=>R.push([d.id,dmy(d.date),"Dépense",d.cat,d.desc||"","","","","",d.montant,d.moy]));
   R.sort((a,b)=>{const p=x=>x[1].split("/").reverse().join("");return p(b)<p(a)?-1:1;});
   dl("depenses-horizon-"+today()+".csv","\uFEFF"+H.map(q).join(";")+"\r\n"+R.map(r=>r.map(q).join(";")).join("\r\n"),"text/csv");
@@ -806,12 +1093,19 @@ window.imp=()=>{
     r.onload=()=>{try{const p=JSON.parse(r.result);
       if(!p||!Array.isArray(p.orders))throw 0;
       confirmBox("Restaurer "+p.orders.length+" commande(s) ?",((p.deps||[]).length+(p.buys||[]).length)+" dépense(s)/achat(s) inclus. Tes données actuelles seront remplacées.",()=>{
-        S=Object.assign({orders:[],deps:[],buys:[],goal:1000000,seq:0,dseq:0,bseq:0},p);
+        S=Object.assign({orders:[],deps:[],buys:[],stock:{STD:0,PRM:0,RAR:0},adj:[],goal:1000000,seq:0,dseq:0,bseq:0},p);
         if(!S.seq)S.seq=S.orders.length;
         if(!Array.isArray(S.deps))S.deps=[];
         if(!Array.isArray(S.buys))S.buys=[];
+        if(!Array.isArray(S.adj))S.adj=[];
+        if(!S.stock||typeof S.stock!=="object")S.stock={STD:0,PRM:0,RAR:0};
+        ["STD","PRM","RAR"].forEach(k=>{if(typeof S.stock[k]!=="number")S.stock[k]=0;});
         if(typeof S.dseq!=="number")S.dseq=S.deps.length;
         if(typeof S.bseq!=="number")S.bseq=S.buys.length;
+        S.orders.forEach(o=>{
+          if(!Array.isArray(o.lignes))o.lignes=[{g:gDeP(o.prix),p:+o.prix||4000,q:+o.qte||1}];
+          if(o.promo===undefined)o.promo="";
+        });
         S.orders.forEach(o=>{
           if(o.adresse===undefined) o.adresse="";
           if(o.avance===undefined)  o.avance=0;
@@ -825,7 +1119,7 @@ window.imp=()=>{
   i.click();
 };
 window.wipe=()=>confirmBox("Tout effacer ?","Toutes tes commandes seront perdues. Pense à exporter avant.",()=>{
-  S={orders:[],deps:[],buys:[],goal:S.goal,seq:0,dseq:0,bseq:0};save();toast("Données effacées");go("acc");});
+  S={orders:[],deps:[],buys:[],stock:{STD:0,PRM:0,RAR:0},adj:[],goal:S.goal,seq:0,dseq:0,bseq:0};save();toast("Données effacées");go("acc");});
 window.setGoal=()=>{
   const v=prompt("Objectif mensuel en FCFA :",S.goal);
   if(v===null)return;
