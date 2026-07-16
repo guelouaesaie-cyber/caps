@@ -45,12 +45,12 @@ nav{
   border-top:1px solid #E2DFD6;padding-bottom:var(--sab);
 }
 nav button{
-  flex:1;border:0;background:none;padding:9px 2px 7px;
+  flex:1;border:0;background:none;padding:9px 1px 7px;
   display:flex;flex-direction:column;align-items:center;gap:3px;
-  color:var(--mute);font-size:10.5px;font-weight:600;min-height:var(--tap);
+  color:var(--mute);font-size:9.5px;font-weight:600;min-height:var(--tap);
   transition:color .15s;
 }
-nav button svg{width:23px;height:23px;stroke-width:1.9}
+nav button svg{width:22px;height:22px;stroke-width:1.9}
 nav button.on{color:var(--green-d)}
 nav button:active{background:#EFEDE7}
 
@@ -170,6 +170,19 @@ p.sub{margin:0 0 18px;color:var(--mute);font-size:14px}
 .dt b{font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;word-break:break-word}
 .tag{background:var(--ink);color:var(--paper);font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:99px;letter-spacing:.6px;vertical-align:middle}
 
+/* mouvements financiers */
+.mv{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #EDEBE5}
+.mv:last-child{border-bottom:0;padding-bottom:0}
+.ml{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ms{font-size:12px;color:var(--mute);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mv b{font-size:14.5px;font-weight:800;font-variant-numeric:tabular-nums}
+
+/* catégories de dépense */
+.cats{display:flex;flex-wrap:wrap;gap:6px}
+.cats button{padding:11px 14px;border-radius:10px;border:1.5px solid #DCD8CE;background:var(--paper-2);
+  font-size:13.5px;font-weight:700;color:var(--mute);min-height:44px}
+.cats button.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+
 /* récap paiement (formulaire) */
 .pay{background:#EDEDEB;border-radius:12px;padding:13px 15px;margin-bottom:15px}
 .pr{display:flex;justify-content:space-between;align-items:center;font-size:14px;padding:3px 0}
@@ -219,14 +232,21 @@ p.sub{margin:0 0 18px;color:var(--mute);font-size:14px}
 const PRIX=[4000,5000,5500], FRAIS=[0,1000,1500,2000,2500];
 const PAY=["Wave","Orange Money","Espèces"], LIVR=["Livreur 1","Livreur 2","Livreur 3"];
 const PAYS=["Espèces","Virement","Wave","Orange Money","Autre"];
+// Espèces et Wave en tête : ce sont tes moyens les plus fréquents.
+const MOY=["Espèces","Wave","Orange Money","Virement"];
+const CAT=["Transport","Marchandise","Repas","Publicité","Téléphone","Emballage","Salaire","Loyer","Remboursement","Autre"];
 const STAT=["En attente","En préparation","Chez le livreur","Livrée","Annulée"];
 const SKEY={"En attente":"attente","En préparation":"prep","Chez le livreur":"chez","Livrée":"livree","Annulée":"annulee"};
 const K="caps.v1";
 
 // ---------- State ----------
-let S={orders:[],goal:1000000,seq:0};
+let S={orders:[],deps:[],buys:[],goal:1000000,seq:0,dseq:0,bseq:0};
 try{const r=localStorage.getItem(K); if(r){const p=JSON.parse(r); if(p&&Array.isArray(p.orders))S=Object.assign(S,p);}}catch(e){}
 // Migration : les anciennes commandes reçoivent les nouveaux champs sans rien perdre.
+if(!Array.isArray(S.deps))S.deps=[];
+if(!Array.isArray(S.buys))S.buys=[];
+if(typeof S.dseq!=="number")S.dseq=S.deps.length;
+if(typeof S.bseq!=="number")S.bseq=S.buys.length;
 S.orders.forEach(o=>{
   if(o.adresse===undefined) o.adresse="";
   if(o.avance===undefined)  o.avance=0;
@@ -256,6 +276,52 @@ const avance=(o)=>Math.max(0,Math.min(+o.avance||0,total(o)));
 const reste=(o)=>total(o)-avance(o);
 const solde=(o)=>reste(o)<=0;                        // entièrement payé
 const active=()=>S.orders.filter(o=>o.statut!=="Annulée");
+
+// --- Moteur financier -------------------------------------------------
+// Encaissé = argent réellement reçu, pas facturé.
+// Commande livrée -> tout est encaissé. Sinon -> seulement l'avance.
+// Une commande annulée n'encaisse rien (l'avance rendue se saisit en dépense "Remboursement").
+const encaisse=(o)=>{
+  if(o.statut==="Annulée")return 0;
+  return o.statut==="Livrée"?total(o):avance(o);
+};
+const duRest=(o)=>{                                   // ce qu'on te doit encore
+  if(o.statut==="Annulée")return 0;
+  return total(o)-encaisse(o);
+};
+const coutBuy=(b)=>(+b.qte||0)*(+b.pu||0)+(+b.transport||0)+(+b.autres||0);
+const inMonth=(d,m)=>String(d||"").slice(0,7)===m;
+const curMonth=()=>today().slice(0,7);
+
+function fin(m){
+  m=m||curMonth();
+  const O=S.orders.filter(o=>inMonth(o.date,m));
+  const Dp=S.deps.filter(d=>inMonth(d.date,m));
+  const B=S.buys.filter(b=>inMonth(b.date,m));
+  const enc=O.reduce((s,o)=>s+encaisse(o),0);
+  const du=S.orders.reduce((s,o)=>s+duRest(o),0);     // tout l'historique, pas juste le mois
+  const dep=Dp.reduce((s,d)=>s+(+d.montant||0),0);
+  const ach=B.reduce((s,b)=>s+coutBuy(b),0);
+  const out=dep+ach;
+  // Où part l'argent : achats + dépenses par catégorie
+  const parCat={};
+  if(ach>0)parCat["Marchandise"]=ach;
+  Dp.forEach(d=>{parCat[d.cat]=(parCat[d.cat]||0)+(+d.montant||0);});
+  return {enc,du,dep,ach,out,net:enc-out,parCat,nbDep:Dp.length+B.length};
+}
+// Fil unique : ventes encaissées + achats + dépenses, triés par date.
+function mouvements(m){
+  const L=[];
+  S.orders.filter(o=>inMonth(o.date,m)&&encaisse(o)>0).forEach(o=>L.push({
+    d:o.date,t:"in",lab:"Vente "+o.id,
+    sub:o.nom+" · "+(o.statut==="Livrée"?"soldé":"avance"),v:encaisse(o)}));
+  S.buys.filter(b=>inMonth(b.date,m)).forEach(b=>L.push({
+    d:b.date,t:"out",lab:"Achat marchandise",
+    sub:b.qte+" pièce"+(b.qte>1?"s":"")+(b.four?" · "+b.four:""),v:coutBuy(b)}));
+  S.deps.filter(x=>inMonth(x.date,m)).forEach(x=>L.push({
+    d:x.date,t:"out",lab:x.desc||x.cat,sub:x.cat+" · "+x.moy,v:+x.montant||0}));
+  return L.sort((a,b)=>b.d<a.d?-1:b.d>a.d?1:0);
+}
 
 function stats(){
   const t=today(), d=new Date();
@@ -290,6 +356,7 @@ const TABS=[
   ["acc","Accueil",'<path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>'],
   ["new","Vendre",'<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>'],
   ["his","Commandes",'<path d="M4 6h16M4 12h16M4 18h16"/>'],
+  ["fin","Finances",'<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18"/><path d="M7 15h3"/>'],
   ["cli","Clients",'<circle cx="9" cy="8" r="3.4"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.5a3.4 3.4 0 010 5M18 20c0-2.4-.9-4.4-2.2-5.6"/>'],
   ["rap","Rapports",'<path d="M5 20V10M12 20V4M19 20v-7"/>']
 ];
@@ -459,6 +526,157 @@ window.cancelEdit=()=>{
   go("his");
 };
 
+// ---------- Finances ----------
+let fm=null;              // mois affiché (null = mois courant)
+let FD=null, FB=null;     // formulaire dépense / achat ouvert
+const moisLab=m=>{const[y,mo]=m.split("-");
+  return new Date(+y,+mo-1,1).toLocaleDateString("fr-FR",{month:"long",year:"numeric"});};
+function moisDispo(){
+  const s=new Set([curMonth()]);
+  S.orders.forEach(o=>s.add(o.date.slice(0,7)));
+  S.deps.forEach(d=>s.add(d.date.slice(0,7)));
+  S.buys.forEach(b=>s.add(b.date.slice(0,7)));
+  return [...s].sort().reverse();
+}
+function vFin(){
+  if(FD)return vDep();
+  if(FB)return vBuy();
+  const m=fm||curMonth(), f=fin(m), mv=mouvements(m), ms=moisDispo();
+  const cats=Object.entries(f.parCat).sort((a,b)=>b[1]-a[1]);
+  const mx=cats.length?cats[0][1]:1;
+  const gr=["#0A0A0A","#4A4A4A","#787878","#A6A6A6","#C4C4C4","#D8D8D8"];
+  return `<div class="page">
+    <h2 class="t">Finances</h2><p class="sub">${moisLab(m)}</p>
+    ${ms.length>1?`<div class="chips">${ms.map(x=>`<button onclick="setM('${x}')" class="${x===m?"on":""}">${moisLab(x)}</button>`).join("")}</div>`:""}
+
+    <div class="card" style="margin-top:12px">
+      <h3>Argent réellement en poche</h3>
+      <div style="font-size:30px;font-weight:800;letter-spacing:-1px;font-variant-numeric:tabular-nums;color:${f.net>=0?"#1E7A3C":"#C0392B"}">${money(f.net)}</div>
+      <div style="font-size:12.5px;color:var(--mute);margin-top:5px">Encaissé ${fmt(f.enc)} − Sorties ${fmt(f.out)}</div>
+    </div>
+
+    <div class="grid" style="margin-top:11px">
+      <div class="kpi"><div class="k">↓ Encaissé</div><div class="v">${money(f.enc)}</div></div>
+      <div class="kpi a"><div class="k">⏳ Reste à encaisser</div><div class="v">${money(f.du)}</div></div>
+      <div class="kpi d"><div class="k">↑ Sorties</div><div class="v">${money(f.out)}</div></div>
+      <div class="kpi ${f.net>=0?"":"r"}"><div class="k">📊 Bénéfice estimé</div><div class="v">${money(f.net)}</div></div>
+    </div>
+
+    <div class="card"><h3>Où part l'argent</h3>
+      ${cats.length?`<div class="sb">${cats.map(([k,v],i)=>
+        `<div class="row"><b>${esc(k)}</b><div class="t"><i style="width:${v/mx*100}%;background:${gr[i%gr.length]}"></i></div><u>${fmt(v)}</u></div>`).join("")}</div>`
+        :`<p style="color:var(--mute);font-size:13px;margin:0">Aucune sortie ce mois-ci</p>`}
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn g" style="flex:1" onclick="openDep()">− Dépense</button>
+      <button class="btn g" style="flex:1" onclick="openBuy()">📦 Achat</button>
+    </div>
+
+    <div class="card"><h3>Mouvements · ${mv.length}</h3>
+      ${mv.length?mv.map(x=>`<div class="mv">
+        <div style="min-width:0"><div class="ml">${esc(x.lab)}</div><div class="ms">${dmy(x.d)} · ${esc(x.sub)}</div></div>
+        <b style="color:${x.t==="in"?"#1E7A3C":"var(--ink)"};white-space:nowrap">${x.t==="in"?"+":"−"} ${money(x.v)}</b>
+      </div>`).join("")
+      :`<p style="color:var(--mute);font-size:13px;margin:0">Aucun mouvement ce mois-ci</p>`}
+    </div>
+  </div>`;
+}
+window.setM=m=>{fm=m;render();};
+
+// ---------- Formulaire dépense ----------
+window.openDep=(id)=>{
+  const d=id?S.deps.find(x=>x.id===id):null;
+  FD=d?{...d}:{id:null,date:today(),cat:"",montant:"",desc:"",moy:""};
+  render();
+};
+window.closeF=()=>{FD=null;FB=null;render();};
+function vDep(){
+  const m=(fm||curMonth()), f=fin(m);
+  const mt=Math.max(0,parseInt(String(FD.montant).replace(/[^\d]/g,""))||0);
+  return `<div class="page">
+    <h2 class="t">${FD.id?"Modifier la dépense":"Nouvelle dépense"}</h2><p class="sub">${dmy(FD.date)}</p>
+    <div class="f"><label>Montant</label>
+      <input id="d-mt" type="number" inputmode="numeric" min="0" placeholder="0" value="${FD.montant}"
+        style="font-size:22px" oninput="FD.montant=this.value" onchange="render()"></div>
+    <div class="f"><label>Catégorie</label>
+      <div class="cats">${CAT.map(c=>`<button onclick="setC('${c}')" class="${FD.cat===c?"on":""}">${c}</button>`).join("")}</div></div>
+    <div class="f"><label>Description <i style="font-weight:400;text-transform:none">(facultatif)</i></label>
+      <input id="d-ds" placeholder="Ex : taxi livraison Almadies" value="${esc(FD.desc)}" oninput="FD.desc=this.value"></div>
+    <div class="f"><label>Payé par</label>
+      <div class="seg pill">${MOY.map(x=>`<button onclick="setMo('${x}')" class="${FD.moy===x?"on":""}">${x==="Orange Money"?"OM":x}</button>`).join("")}</div></div>
+    <div class="f"><label>Date</label><input type="date" id="d-dt" value="${FD.date}" onchange="FD.date=this.value||today()"></div>
+    ${mt>0?`<div class="pay"><div class="pr"><span>Sorties du mois après</span><b>${money(f.out+(FD.id?mt-(S.deps.find(x=>x.id===FD.id)?.montant||0):mt))}</b></div></div>`:""}
+    <button class="btn" onclick="saveDep()">${FD.id?"Enregistrer les modifications":"Enregistrer la dépense"}</button>
+    <button class="btn g" style="margin-top:9px" onclick="closeF()">Annuler</button>
+    ${FD.id?`<button class="btn g rr" style="margin-top:9px;color:#fff;border:0" onclick="delDep('${FD.id}')">Supprimer</button>`:""}
+  </div>`;
+}
+window.setC=c=>{const e=document.getElementById("d-ds");if(e)FD.desc=e.value;FD.cat=c;render();};
+window.setMo=x=>{const e=document.getElementById("d-ds");if(e)FD.desc=e.value;FD.moy=x;render();};
+window.saveDep=()=>{
+  const e=document.getElementById("d-ds");if(e)FD.desc=e.value;
+  const mt=Math.max(0,parseInt(String(FD.montant).replace(/[^\d]/g,""))||0);
+  if(!mt)return toast("Entre un montant");
+  if(!FD.cat)return toast("Choisis une catégorie");
+  if(!FD.moy)return toast("Choisis le moyen de paiement");
+  const body={date:FD.date||today(),cat:FD.cat,montant:mt,desc:(FD.desc||"").trim(),moy:FD.moy};
+  if(FD.id){const d=S.deps.find(x=>x.id===FD.id);if(d)Object.assign(d,body);toast("Dépense modifiée");}
+  else{S.dseq++;S.deps.unshift(Object.assign({id:"DEP-"+String(S.dseq).padStart(5,"0")},body));toast("Dépense enregistrée");}
+  save();FD=null;render();
+};
+window.delDep=id=>confirmBox("Supprimer cette dépense ?","Elle sera retirée de tes comptes.",()=>{
+  S.deps=S.deps.filter(x=>x.id!==id);save();FD=null;toast("Dépense supprimée");render();});
+
+// ---------- Formulaire achat ----------
+window.openBuy=(id)=>{
+  const b=id?S.buys.find(x=>x.id===id):null;
+  FB=b?{...b}:{id:null,date:today(),four:"",qte:"",pu:"",transport:"",autres:"",moy:""};
+  render();
+};
+function vBuy(){
+  const q=Math.max(0,parseInt(FB.qte)||0), pu=Math.max(0,parseInt(FB.pu)||0);
+  const tr=Math.max(0,parseInt(FB.transport)||0), au=Math.max(0,parseInt(FB.autres)||0);
+  const tt=q*pu+tr+au;
+  return `<div class="page">
+    <h2 class="t">${FB.id?"Modifier l'achat":"Nouvel achat"}</h2><p class="sub">Marchandise · ${dmy(FB.date)}</p>
+    <div class="f"><label>Fournisseur <i style="font-weight:400;text-transform:none">(facultatif)</i></label>
+      <input id="b-fr" placeholder="Ex : Diallo Import" value="${esc(FB.four)}" oninput="FB.four=this.value"></div>
+    <div class="f2">
+      <div class="f"><label>Quantité</label><input type="number" inputmode="numeric" min="0" placeholder="0" value="${FB.qte}" oninput="FB.qte=this.value" onchange="render()"></div>
+      <div class="f"><label>Coût unitaire</label><input type="number" inputmode="numeric" min="0" placeholder="0" value="${FB.pu}" oninput="FB.pu=this.value" onchange="render()"></div>
+    </div>
+    <div class="f2">
+      <div class="f"><label>Transport</label><input type="number" inputmode="numeric" min="0" placeholder="0" value="${FB.transport}" oninput="FB.transport=this.value" onchange="render()"></div>
+      <div class="f"><label>Autres frais</label><input type="number" inputmode="numeric" min="0" placeholder="0" value="${FB.autres}" oninput="FB.autres=this.value" onchange="render()"></div>
+    </div>
+    <div class="tot"><div><span>Coût total de l'achat</span><br><b>${money(tt)}</b></div>
+      <div style="text-align:right;font-size:12.5px;color:#9A9A9A;line-height:1.7">${q} × ${fmt(pu)}${tr?"<br>+ "+fmt(tr)+" transport":""}${au?"<br>+ "+fmt(au)+" autres":""}</div></div>
+    ${q>0&&tt>0?`<div class="pay"><div class="pr"><span>Revient à</span><b>${money(Math.round(tt/q))} / pièce</b></div></div>`:""}
+    <div class="f"><label>Payé par</label>
+      <div class="seg pill">${MOY.map(x=>`<button onclick="setBm('${x}')" class="${FB.moy===x?"on":""}">${x==="Orange Money"?"OM":x}</button>`).join("")}</div></div>
+    <div class="f"><label>Date</label><input type="date" value="${FB.date}" onchange="FB.date=this.value||today()"></div>
+    <button class="btn" onclick="saveBuy()">${FB.id?"Enregistrer les modifications":"Enregistrer l'achat"}</button>
+    <button class="btn g" style="margin-top:9px" onclick="closeF()">Annuler</button>
+    ${FB.id?`<button class="btn g rr" style="margin-top:9px;color:#fff;border:0" onclick="delBuy('${FB.id}')">Supprimer</button>`:""}
+  </div>`;
+}
+window.setBm=x=>{const e=document.getElementById("b-fr");if(e)FB.four=e.value;FB.moy=x;render();};
+window.saveBuy=()=>{
+  const e=document.getElementById("b-fr");if(e)FB.four=e.value;
+  const q=Math.max(0,parseInt(FB.qte)||0), pu=Math.max(0,parseInt(FB.pu)||0);
+  if(!q)return toast("Entre la quantité");
+  if(!pu)return toast("Entre le coût unitaire");
+  if(!FB.moy)return toast("Choisis le moyen de paiement");
+  const body={date:FB.date||today(),four:(FB.four||"").trim(),qte:q,pu:pu,
+    transport:Math.max(0,parseInt(FB.transport)||0),autres:Math.max(0,parseInt(FB.autres)||0),moy:FB.moy};
+  if(FB.id){const b=S.buys.find(x=>x.id===FB.id);if(b)Object.assign(b,body);toast("Achat modifié");}
+  else{S.bseq++;S.buys.unshift(Object.assign({id:"ACH-"+String(S.bseq).padStart(5,"0")},body));toast("Achat enregistré");}
+  save();FB=null;render();
+};
+window.delBuy=id=>confirmBox("Supprimer cet achat ?","Il sera retiré de tes comptes.",()=>{
+  S.buys=S.buys.filter(x=>x.id!==id);save();FB=null;toast("Achat supprimé");render();});
+
 let q="",fs="Toutes";
 function vHis(){
   const ql=q.toLowerCase().trim();
@@ -548,7 +766,8 @@ function vRap(){
     <div class="card"><h3>Livreurs</h3><div class="sb">${dl}</div></div>
     <div class="card"><h3>Tes données</h3>
       <p style="margin:0 0 13px;color:var(--mute);font-size:13.5px">Tes ventes sont sur cet iPad uniquement. Exporte-les de temps en temps.</p>
-      <button class="btn g" onclick="expCSV()" style="margin-bottom:8px">📄 Exporter vers Excel (CSV)</button>
+      <button class="btn g" onclick="expCSV()" style="margin-bottom:8px">📄 Exporter les ventes (CSV)</button>
+      <button class="btn g" onclick="expDep()" style="margin-bottom:8px">📄 Exporter les dépenses (CSV)</button>
       <button class="btn g" onclick="expJSON()" style="margin-bottom:8px">💾 Fichier de sauvegarde</button>
       <button class="btn g" onclick="imp()" style="margin-bottom:8px">📥 Restaurer une sauvegarde</button>
       <button class="btn g rr" style="color:#fff;border:0" onclick="wipe()">Tout effacer</button>
@@ -569,15 +788,30 @@ window.expCSV=()=>{
   dl("ventes-horizon-"+today()+".csv","\uFEFF"+H.map(q).join(";")+"\r\n"+rows.join("\r\n"),"text/csv");
   toast("Export CSV prêt");
 };
+window.expDep=()=>{
+  if(!S.deps.length&&!S.buys.length)return toast("Aucune dépense à exporter");
+  const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const H=["Réf","Date","Type","Catégorie","Description","Quantité","Coût unitaire","Transport","Autres frais","MONTANT","Payé par"];
+  const R=[];
+  S.buys.forEach(b=>R.push([b.id,dmy(b.date),"Achat","Marchandise",b.four||"",b.qte,b.pu,b.transport||0,b.autres||0,coutBuy(b),b.moy]));
+  S.deps.forEach(d=>R.push([d.id,dmy(d.date),"Dépense",d.cat,d.desc||"","","","","",d.montant,d.moy]));
+  R.sort((a,b)=>{const p=x=>x[1].split("/").reverse().join("");return p(b)<p(a)?-1:1;});
+  dl("depenses-horizon-"+today()+".csv","\uFEFF"+H.map(q).join(";")+"\r\n"+R.map(r=>r.map(q).join(";")).join("\r\n"),"text/csv");
+  toast("Export dépenses prêt");
+};
 window.expJSON=()=>{dl("sauvegarde-horizon-"+today()+".json",JSON.stringify(S),"application/json");toast("Sauvegarde prête");};
 window.imp=()=>{
   const i=document.createElement("input");i.type="file";i.accept=".json,application/json";
   i.onchange=()=>{const f=i.files[0];if(!f)return;const r=new FileReader();
     r.onload=()=>{try{const p=JSON.parse(r.result);
       if(!p||!Array.isArray(p.orders))throw 0;
-      confirmBox("Restaurer "+p.orders.length+" commande(s) ?","Tes données actuelles seront remplacées.",()=>{
-        S=Object.assign({orders:[],goal:1000000,seq:0},p);
+      confirmBox("Restaurer "+p.orders.length+" commande(s) ?",((p.deps||[]).length+(p.buys||[]).length)+" dépense(s)/achat(s) inclus. Tes données actuelles seront remplacées.",()=>{
+        S=Object.assign({orders:[],deps:[],buys:[],goal:1000000,seq:0,dseq:0,bseq:0},p);
         if(!S.seq)S.seq=S.orders.length;
+        if(!Array.isArray(S.deps))S.deps=[];
+        if(!Array.isArray(S.buys))S.buys=[];
+        if(typeof S.dseq!=="number")S.dseq=S.deps.length;
+        if(typeof S.bseq!=="number")S.bseq=S.buys.length;
         S.orders.forEach(o=>{
           if(o.adresse===undefined) o.adresse="";
           if(o.avance===undefined)  o.avance=0;
@@ -591,7 +825,7 @@ window.imp=()=>{
   i.click();
 };
 window.wipe=()=>confirmBox("Tout effacer ?","Toutes tes commandes seront perdues. Pense à exporter avant.",()=>{
-  S={orders:[],goal:S.goal,seq:0};save();toast("Données effacées");go("acc");});
+  S={orders:[],deps:[],buys:[],goal:S.goal,seq:0,dseq:0,bseq:0};save();toast("Données effacées");go("acc");});
 window.setGoal=()=>{
   const v=prompt("Objectif mensuel en FCFA :",S.goal);
   if(v===null)return;
@@ -611,7 +845,7 @@ function confirmBox(t,m,ok){
 
 // ---------- Render ----------
 function render(){
-  const V={acc:vAcc,new:vNew,his:vHis,cli:vCli,rap:vRap};
+  const V={acc:vAcc,new:vNew,his:vHis,fin:vFin,cli:vCli,rap:vRap};
   document.getElementById("main").innerHTML=V[tab]();
   const s=document.getElementById("q");
   if(s)s.oninput=e=>{q=e.target.value;const p=e.target.selectionStart;render();
