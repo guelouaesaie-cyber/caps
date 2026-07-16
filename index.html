@@ -159,6 +159,25 @@ p.sub{margin:0 0 18px;color:var(--mute);font-size:14px}
 .st.annulee{background:#FADDDC;color:#8C2323}
 .o select{border:1.5px solid #DCD8CE;border-radius:9px;padding:7px 9px;font-size:12.5px;font-weight:700;background:var(--paper-2);color:var(--ink);min-height:38px}
 .x{border:0;background:none;color:var(--mute);font-size:19px;padding:5px 9px;min-height:38px}
+.ed{border:1.5px solid var(--ink);background:var(--paper-2);color:var(--ink);border-radius:9px;padding:7px 12px;font-size:12.5px;font-weight:700;min-height:38px}
+.ed:active{background:var(--ink);color:var(--paper)}
+
+/* détails commande */
+.dt{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-top:11px;padding-top:11px;border-top:1px solid #EDEBE5}
+@media(min-width:640px){.dt{grid-template-columns:repeat(3,1fr)}}
+.dt div{display:flex;flex-direction:column;gap:1px;min-width:0}
+.dt span{font-size:10px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.4px}
+.dt b{font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;word-break:break-word}
+.tag{background:var(--ink);color:var(--paper);font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:99px;letter-spacing:.6px;vertical-align:middle}
+
+/* récap paiement (formulaire) */
+.pay{background:#EDEDEB;border-radius:12px;padding:13px 15px;margin-bottom:15px}
+.pr{display:flex;justify-content:space-between;align-items:center;font-size:14px;padding:3px 0}
+.pr span{color:var(--mute);font-weight:600}
+.pr b{font-variant-numeric:tabular-nums;font-weight:700}
+.pr.big{border-top:1px solid #DCD9D2;margin-top:6px;padding-top:9px;font-size:17px}
+.pr.big b{font-size:19px;font-weight:800}
+.okpay{background:#DCEFE2;color:#1E7A3C;border-radius:8px;padding:8px 10px;font-size:12.5px;font-weight:700;margin-top:9px;text-align:center}
 
 .empty{text-align:center;padding:56px 22px;color:var(--mute)}
 .empty svg{width:46px;height:46px;opacity:.3;margin-bottom:12px}
@@ -197,8 +216,9 @@ p.sub{margin:0 0 18px;color:var(--mute);font-size:14px}
 
 <script>
 "use strict";
-const PRIX=[4000,5000,5500], FRAIS=[1000,1500,2000,2500];
+const PRIX=[4000,5000,5500], FRAIS=[0,1000,1500,2000,2500];
 const PAY=["Wave","Orange Money","Espèces"], LIVR=["Livreur 1","Livreur 2","Livreur 3"];
+const PAYS=["Espèces","Virement","Wave","Orange Money","Autre"];
 const STAT=["En attente","En préparation","Chez le livreur","Livrée","Annulée"];
 const SKEY={"En attente":"attente","En préparation":"prep","Chez le livreur":"chez","Livrée":"livree","Annulée":"annulee"};
 const K="caps.v1";
@@ -206,12 +226,22 @@ const K="caps.v1";
 // ---------- State ----------
 let S={orders:[],goal:1000000,seq:0};
 try{const r=localStorage.getItem(K); if(r){const p=JSON.parse(r); if(p&&Array.isArray(p.orders))S=Object.assign(S,p);}}catch(e){}
+// Migration : les anciennes commandes reçoivent les nouveaux champs sans rien perdre.
+S.orders.forEach(o=>{
+  if(o.adresse===undefined) o.adresse="";
+  if(o.avance===undefined)  o.avance=0;
+  if(o.paySolde===undefined)o.paySolde="Espèces";
+  if(o.resa===undefined)    o.resa=false;
+  if(o.dateResa===undefined)o.dateResa="";
+});
 function save(){
   try{localStorage.setItem(K,JSON.stringify(S));}
   catch(e){toast("Mémoire pleine — exporte tes données");}
 }
 const fmt=n=>Math.round(n).toLocaleString("fr-FR").replace(/\u202f|\u00a0/g," ");
 const money=n=>fmt(n)+" F";
+// Neutralise le HTML : un nom contenant " ou < ne casse pas l'affichage.
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const today=()=>new Date().toISOString().slice(0,10);
 const dmy=s=>{const[a,b,c]=s.split("-");return c+"/"+b+"/"+a;};
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("on");clearTimeout(t._);t._=setTimeout(()=>t.classList.remove("on"),2100);}
@@ -221,6 +251,10 @@ document.getElementById("today").textContent=new Date().toLocaleDateString("fr-F
 const isFree=(o)=>!o.hors && o.qte>=2;               // Dakar + 2 articles → gratuit
 const frais=(o)=>isFree(o)?0:(+o.frais||0);
 const total=(o)=>o.qte*o.prix+frais(o);
+// L'avance ne peut jamais dépasser le total ni être négative.
+const avance=(o)=>Math.max(0,Math.min(+o.avance||0,total(o)));
+const reste=(o)=>total(o)-avance(o);
+const solde=(o)=>reste(o)<=0;                        // entièrement payé
 const active=()=>S.orders.filter(o=>o.statut!=="Annulée");
 
 function stats(){
@@ -306,15 +340,22 @@ function vAcc(){
   </div>`;
 }
 
-let D={hors:false,qte:1,prix:5000,frais:1000,paiement:"Wave",livreur:"Livreur 1",statut:"En attente"};
+let E=null;   // commande en cours de modification (null = création)
+let D={hors:false,qte:1,prix:5000,frais:1000,paiement:"Wave",livreur:"Livreur 1",statut:"En attente",
+       avance:"",paySolde:"Espèces",resa:false,dateResa:"",adresse:""};
 function vNew(){
-  const num="CMD-"+String(S.seq+1).padStart(6,"0");
-  const free=isFree(D), art=D.qte*D.prix, fr=frais(D);
+  const num=E?E.id:"CMD-"+String(S.seq+1).padStart(6,"0");
+  const free=isFree(D), art=D.qte*D.prix, fr=frais(D), tt=art+fr;
+  const av=Math.max(0,Math.min(+D.avance||0,tt)), rs=tt-av;
   return `<div class="page">
-    <h2 class="t">Nouvelle vente</h2><p class="sub">${num} · ${dmy(today())}</p>
-    <div class="f"><label>Nom du client</label><input id="i-nom" placeholder="Ex : Awa Ndiaye" autocomplete="off" value="${D.nom||""}"></div>
-    <div class="f"><label>Téléphone</label><input id="i-tel" type="tel" inputmode="numeric" placeholder="77 123 45 67" value="${D.tel||""}"></div>
-    <div class="f"><label>Ville</label><input id="i-ville" placeholder="Ex : Dakar" autocomplete="off" value="${D.ville||""}"></div>
+    <h2 class="t">${E?"Modifier la vente":"Nouvelle vente"}</h2>
+    <p class="sub">${num} · ${E?dmy(E.date):dmy(today())}</p>
+    <div class="f"><label>Nom du client</label><input id="i-nom" placeholder="Ex : Awa Ndiaye" autocomplete="off" value="${esc(D.nom||"")}"></div>
+    <div class="f"><label>Téléphone</label><input id="i-tel" type="tel" inputmode="numeric" placeholder="77 123 45 67" value="${esc(D.tel||"")}"></div>
+    <div class="f2">
+      <div class="f"><label>Ville</label><input id="i-ville" placeholder="Ex : Dakar" autocomplete="off" value="${esc(D.ville||"")}"></div>
+      <div class="f"><label>Adresse <i style="font-weight:400;text-transform:none">(facultatif)</i></label><input id="i-adr" placeholder="Quartier, repère" autocomplete="off" value="${esc(D.adresse||"")}"></div>
+    </div>
     <div class="f"><label>Zone de livraison</label>
       <div class="seg"><button onclick="setH(0)" class="${!D.hors?"on":""}">Dakar ville</button><button onclick="setH(1)" class="${D.hors?"on":""}">Hors Dakar</button></div></div>
     <div class="f2">
@@ -323,24 +364,53 @@ function vNew(){
     </div>
     ${free?`<div class="free">✅ Livraison offerte — Dakar, ${D.qte} articles</div>`:
       `<div class="f"><label>Frais de livraison${D.hors?" (part entreprise)":""}</label>
-        <div class="seg pill">${FRAIS.map(f=>`<button onclick="setF(${f})" class="${D.frais==f?"on":""}">${fmt(f)}</button>`).join("")}</div></div>`}
+        <div class="seg pill">${FRAIS.map(f=>`<button onclick="setF(${f})" class="${D.frais==f?"on":""}">${f===0?"Offerte":fmt(f)}</button>`).join("")}</div></div>`}
     ${D.hors?`<div class="free" style="background:#EDEDEB;color:#3A3A3A">🚚 Le transport vers la ville est payé par le client</div>`:""}
-    <div class="tot"><div><span>Total à payer</span><br><b>${money(art+fr)}</b></div>
+    <div class="tot"><div><span>Total à payer</span><br><b>${money(tt)}</b></div>
       <div style="text-align:right;font-size:12.5px;color:#9A9A9A;line-height:1.7">${D.qte} × ${fmt(D.prix)}<br>+ ${fmt(fr)} livraison</div></div>
+
+    <div class="f"><label>Avance / Acompte versé <i style="font-weight:400;text-transform:none">(facultatif)</i></label>
+      <input id="i-av" type="number" inputmode="numeric" min="0" placeholder="0" value="${D.avance}" onchange="setA(this.value)" oninput="setA(this.value)"></div>
+    ${av>0?`<div class="pay">
+      <div class="pr"><span>Montant total</span><b>${money(tt)}</b></div>
+      <div class="pr"><span>Déjà payé</span><b style="color:#1E7A3C">− ${money(av)}</b></div>
+      <div class="pr big"><span>Reste à payer</span><b>${money(rs)}</b></div>
+      ${rs===0?`<div class="okpay">✅ Commande entièrement payée</div>`:""}
+    </div>`:""}
+    ${rs>0?`<div class="f"><label>Mode de paiement du solde</label>
+      <select onchange="D.paySolde=this.value">${PAYS.map(p=>`<option ${D.paySolde===p?"selected":""}>${p}</option>`).join("")}</select></div>`:""}
+
+    <div class="f"><label>Réservation</label>
+      <div class="seg"><button onclick="setR(0)" class="${!D.resa?"on":""}">Non</button><button onclick="setR(1)" class="${D.resa?"on":""}">Réserver l'article</button></div></div>
+    ${D.resa?`<div class="f"><label>Date prévue de récupération <i style="font-weight:400;text-transform:none">(facultatif)</i></label>
+      <input type="date" id="i-dr" value="${D.dateResa||""}" onchange="D.dateResa=this.value"></div>`:""}
+
     <div class="f2">
       <div class="f"><label>Paiement</label><select onchange="D.paiement=this.value">${PAY.map(p=>`<option ${D.paiement===p?"selected":""}>${p}</option>`).join("")}</select></div>
       <div class="f"><label>Livreur</label><select onchange="D.livreur=this.value">${LIVR.map(p=>`<option ${D.livreur===p?"selected":""}>${p}</option>`).join("")}</select></div>
     </div>
     <div class="f"><label>Statut</label><select onchange="D.statut=this.value">${STAT.map(p=>`<option ${D.statut===p?"selected":""}>${p}</option>`).join("")}</select></div>
-    <button class="btn" onclick="add()">Enregistrer la vente</button>
+    <button class="btn" onclick="add()">${E?"Enregistrer les modifications":"Enregistrer la vente"}</button>
+    ${E?`<button class="btn g" style="margin-top:9px" onclick="cancelEdit()">Annuler</button>`:""}
   </div>`;
 }
 function keep(){const g=id=>{const e=document.getElementById(id);return e?e.value:"";};
-  D.nom=g("i-nom");D.tel=g("i-tel");D.ville=g("i-ville");}
+  D.nom=g("i-nom");D.tel=g("i-tel");D.ville=g("i-ville");D.adresse=g("i-adr");}
 window.setH=v=>{keep();D.hors=!!v;render();};
 window.setQ=v=>{const n=Math.max(1,parseInt(v)||1);if(n===D.qte)return;keep();D.qte=n;render();};
 window.setP=v=>{keep();D.prix=+v;render();};
 window.setF=v=>{keep();D.frais=+v;render();};
+window.setR=v=>{keep();D.resa=!!v;render();};
+window.setA=v=>{
+  keep();
+  const tt=D.qte*D.prix+frais(D);
+  let n=v===""?"":Math.max(0,parseInt(String(v).replace(/[^\d]/g,""))||0);
+  if(n!==""&&n>tt){n=tt;toast("L'avance ne peut pas dépasser "+money(tt));}
+  if(String(n)===String(D.avance))return;
+  D.avance=n;render();
+  const e=document.getElementById("i-av");
+  if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length);}
+};
 window.add=()=>{
   keep();
   const bad=[];
@@ -350,34 +420,84 @@ window.add=()=>{
   document.querySelectorAll(".err").forEach(e=>e.classList.remove("err"));
   if(bad.length){bad.forEach(i=>document.getElementById(i).classList.add("err"));
     document.getElementById(bad[0]).focus();return toast("Remplis le nom, le téléphone et la ville");}
+  const tt=D.qte*D.prix+frais(D);
+  const av=Math.max(0,Math.min(+D.avance||0,tt));
+  const body={nom:D.nom.trim(),tel:D.tel.trim(),ville:D.ville.trim(),adresse:(D.adresse||"").trim(),
+    hors:D.hors,qte:D.qte,prix:D.prix,frais:D.frais,avance:av,paySolde:D.paySolde,
+    resa:D.resa,dateResa:D.resa?(D.dateResa||""):"",
+    paiement:D.paiement,livreur:D.livreur,statut:D.statut};
+  if(E){
+    // Modification : on met à jour la commande existante, pas de doublon.
+    const o=S.orders.find(x=>x.id===E.id);
+    if(!o){E=null;return toast("Commande introuvable");}
+    Object.assign(o,body);
+    save();E=null;
+    D={hors:false,qte:1,prix:5000,frais:1000,paiement:"Wave",livreur:"Livreur 1",statut:"En attente",
+       avance:"",paySolde:"Espèces",resa:false,dateResa:"",adresse:""};
+    toast("Commande modifiée");go("his");return;
+  }
   S.seq++;
-  S.orders.unshift({id:"CMD-"+String(S.seq).padStart(6,"0"),date:today(),nom:D.nom.trim(),tel:D.tel.trim(),
-    ville:D.ville.trim(),hors:D.hors,qte:D.qte,prix:D.prix,frais:D.frais,
-    paiement:D.paiement,livreur:D.livreur,statut:D.statut});
+  S.orders.unshift(Object.assign({id:"CMD-"+String(S.seq).padStart(6,"0"),date:today()},body));
   save();
-  D={hors:false,qte:1,prix:5000,frais:1000,paiement:D.paiement,livreur:D.livreur,statut:"En attente"};
+  D={hors:false,qte:1,prix:5000,frais:1000,paiement:D.paiement,livreur:D.livreur,statut:"En attente",
+     avance:"",paySolde:"Espèces",resa:false,dateResa:"",adresse:""};
   toast("Vente enregistrée");go("his");
+};
+window.edit=id=>{
+  const o=S.orders.find(x=>x.id===id);
+  if(!o)return toast("Commande introuvable");
+  E=o;
+  D={nom:o.nom,tel:o.tel,ville:o.ville,adresse:o.adresse||"",hors:o.hors,qte:o.qte,prix:o.prix,
+     frais:o.frais,avance:o.avance||"",paySolde:o.paySolde||"Espèces",resa:!!o.resa,
+     dateResa:o.dateResa||"",paiement:o.paiement,livreur:o.livreur,statut:o.statut};
+  go("new");
+};
+window.cancelEdit=()=>{
+  E=null;
+  D={hors:false,qte:1,prix:5000,frais:1000,paiement:"Wave",livreur:"Livreur 1",statut:"En attente",
+     avance:"",paySolde:"Espèces",resa:false,dateResa:"",adresse:""};
+  go("his");
 };
 
 let q="",fs="Toutes";
 function vHis(){
   const ql=q.toLowerCase().trim();
-  const list=S.orders.filter(o=>(fs==="Toutes"||o.statut===fs)&&
-    (!ql||[o.nom,o.tel,o.ville,o.id].join("|").toLowerCase().includes(ql)));
+  const list=S.orders.filter(o=>(fs==="Toutes"||(fs==="Réservés"?o.resa:o.statut===fs))&&
+    (!ql||[o.nom,o.tel,o.ville,o.adresse||"",o.id].join("|").toLowerCase().includes(ql)));
   return `<div class="page">
     <h2 class="t">Commandes</h2><p class="sub">${list.length} sur ${S.orders.length}</p>
     <input class="search" id="q" placeholder="Nom, téléphone, ville ou n°" value="${q}" autocomplete="off">
-    <div class="chips">${["Toutes",...STAT].map(s=>`<button onclick="setS('${s}')" class="${fs===s?"on":""}">${s}</button>`).join("")}</div>
-    ${list.length?list.map(o=>`<div class="o">
-      <div class="h"><div><div class="n">${o.id}</div><div class="m">${o.nom} · ${o.ville}${o.hors?" 🚚":""}</div>
-        <div class="m">${dmy(o.date)} · ${o.qte} × ${fmt(o.prix)} · ${o.paiement}</div></div>
+    <div class="chips">${["Toutes","Réservés",...STAT].map(s=>`<button onclick="setS('${s}')" class="${fs===s?"on":""}">${s}</button>`).join("")}</div>
+    ${list.length?list.map(o=>{
+      const av=avance(o),rs=reste(o);
+      return `<div class="o">
+      <div class="h"><div><div class="n">${o.id}${o.resa?` <span class="tag">RÉSERVÉ</span>`:""}</div>
+        <div class="m">${esc(o.nom)} · ${esc(o.tel)}</div></div>
         <div style="text-align:right"><div class="p">${money(total(o))}</div>
-        <div class="m" style="font-size:11.5px">${isFree(o)?"Livraison offerte":"+"+fmt(frais(o))+" liv."}</div></div></div>
+        <div class="m" style="font-size:11.5px">${dmy(o.date)}</div></div></div>
+
+      <div class="dt">
+        <div><span>Ville</span><b>${esc(o.ville)}${o.hors?" 🚚":""}</b></div>
+        ${o.adresse?`<div><span>Adresse</span><b>${esc(o.adresse)}</b></div>`:""}
+        <div><span>Articles</span><b>${o.qte} × ${fmt(o.prix)} F</b></div>
+        <div><span>Sous-total</span><b>${money(o.qte*o.prix)}</b></div>
+        <div><span>Livraison</span><b>${isFree(o)?"Offerte":(frais(o)===0?"Offerte":money(frais(o)))}</b></div>
+        <div><span>Total</span><b>${money(total(o))}</b></div>
+        <div><span>Avance</span><b${av>0?' style="color:#1E7A3C"':''}>${money(av)}</b></div>
+        <div><span>Reste à payer</span><b${rs>0?' style="color:#B8860B"':' style="color:#1E7A3C"'}>${rs>0?money(rs):"Soldé ✅"}</b></div>
+        ${rs>0?`<div><span>Solde par</span><b>${esc(o.paySolde||"Espèces")}</b></div>`:""}
+        <div><span>Paiement</span><b>${esc(o.paiement)}</b></div>
+        <div><span>Livreur</span><b>${esc(o.livreur)}</b></div>
+        <div><span>Réservation</span><b>${o.resa?"Oui":"Non"}</b></div>
+        ${o.resa&&o.dateResa?`<div><span>Récupération</span><b>${dmy(o.dateResa)}</b></div>`:""}
+      </div>
+
       <div class="f"><span class="st ${SKEY[o.statut]}">${o.statut}</span>
         <div style="display:flex;gap:6px;align-items:center">
         <select onchange="chS('${o.id}',this.value)">${STAT.map(s=>`<option ${o.statut===s?"selected":""}>${s}</option>`).join("")}</select>
+        <button class="ed" onclick="edit('${o.id}')">Modifier</button>
         <button class="x" onclick="del('${o.id}')">✕</button></div></div>
-    </div>`).join(""):`<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+    </div>`;}).join(""):`<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
       <b>${S.orders.length?"Aucun résultat":"Aucune commande"}</b><p>${S.orders.length?"Change ta recherche ou le filtre":"Va dans Vendre pour créer ta première vente"}</p></div>`}
   </div>`;
 }
@@ -399,8 +519,8 @@ function vCli(){
   const L=Object.values(m).sort((a,b)=>b.t-a.t);
   return `<div class="page"><h2 class="t">Clients</h2><p class="sub">${L.length} client${L.length>1?"s":""}</p>
     ${L.length?L.map((c,i)=>`<div class="o"><div class="h">
-      <div><div class="n">${i===0&&c.t>0?"🏆 ":""}${c.nom}</div>
-      <div class="m">${c.tel} · ${c.ville}</div>
+      <div><div class="n">${i===0&&c.t>0?"🏆 ":""}${esc(c.nom)}</div>
+      <div class="m">${esc(c.tel)} · ${esc(c.ville)}</div>
       <div class="m">${c.n} commande${c.n>1?"s":""} · dernière ${dmy(c.last)}</div></div>
       <div class="p">${money(c.t)}</div></div></div>`).join(""):
       `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="8" r="3.4"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
@@ -443,10 +563,10 @@ function dl(name,txt,type){
 }
 window.expCSV=()=>{
   if(!S.orders.length)return toast("Aucune commande à exporter");
-  const H=["N° Commande","Date","Nom client","Téléphone","Ville","Hors Dakar","Quantité","Prix unitaire","Total articles","Frais livraison","TOTAL A PAYER","Paiement","Livreur","Statut"];
-  const esc=v=>'"'+String(v).replace(/"/g,'""')+'"';
-  const rows=S.orders.map(o=>[o.id,dmy(o.date),o.nom,o.tel,o.ville,o.hors?"OUI":"NON",o.qte,o.prix,o.qte*o.prix,frais(o),total(o),o.paiement,o.livreur,o.statut].map(esc).join(";"));
-  dl("ventes-horizon-"+today()+".csv","\uFEFF"+H.map(esc).join(";")+"\r\n"+rows.join("\r\n"),"text/csv");
+  const H=["N° Commande","Date","Nom client","Téléphone","Ville","Adresse","Hors Dakar","Quantité","Prix unitaire","Total articles","Frais livraison","TOTAL A PAYER","Avance versée","Reste à payer","Mode paiement solde","Paiement","Livreur","Statut","Réservation","Date récupération"];
+  const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const rows=S.orders.map(o=>[o.id,dmy(o.date),o.nom,o.tel,o.ville,o.adresse||"",o.hors?"OUI":"NON",o.qte,o.prix,o.qte*o.prix,frais(o),total(o),avance(o),reste(o),(reste(o)>0?(o.paySolde||""):"Soldé"),o.paiement,o.livreur,o.statut,o.resa?"OUI":"NON",o.dateResa?dmy(o.dateResa):""].map(q).join(";"));
+  dl("ventes-horizon-"+today()+".csv","\uFEFF"+H.map(q).join(";")+"\r\n"+rows.join("\r\n"),"text/csv");
   toast("Export CSV prêt");
 };
 window.expJSON=()=>{dl("sauvegarde-horizon-"+today()+".json",JSON.stringify(S),"application/json");toast("Sauvegarde prête");};
@@ -458,6 +578,13 @@ window.imp=()=>{
       confirmBox("Restaurer "+p.orders.length+" commande(s) ?","Tes données actuelles seront remplacées.",()=>{
         S=Object.assign({orders:[],goal:1000000,seq:0},p);
         if(!S.seq)S.seq=S.orders.length;
+        S.orders.forEach(o=>{
+          if(o.adresse===undefined) o.adresse="";
+          if(o.avance===undefined)  o.avance=0;
+          if(o.paySolde===undefined)o.paySolde="Espèces";
+          if(o.resa===undefined)    o.resa=false;
+          if(o.dateResa===undefined)o.dateResa="";
+        });
         save();toast("Sauvegarde restaurée");go("acc");});
     }catch(e){toast("Fichier de sauvegarde invalide");}};
     r.readAsText(f);};
