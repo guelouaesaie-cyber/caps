@@ -170,6 +170,35 @@ p.sub{margin:0 0 18px;color:var(--mute);font-size:14px}
 .dt b{font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;word-break:break-word}
 .tag{background:var(--ink);color:var(--paper);font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:99px;letter-spacing:.6px;vertical-align:middle}
 
+/* retour */
+.bk{background:none;border:0;color:var(--mute);font-size:14px;font-weight:700;padding:2px 0 8px;min-height:34px}
+.bk:active{color:var(--ink)}
+
+/* alertes accueil */
+.alerts{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.al{width:100%;background:var(--paper-2);border:1.5px solid var(--ink);border-left-width:5px;border-radius:12px;
+  padding:12px 14px;display:grid;grid-template-columns:1fr auto;gap:2px 10px;text-align:left;min-height:58px;align-items:center}
+.al span{font-size:12.5px;font-weight:800;color:var(--ink)}
+.al b{grid-row:2;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+.al i{grid-row:1/3;grid-column:2;font-style:normal;font-size:12.5px;font-weight:700;color:var(--mute)}
+.al.w{border-color:#E8A33D}
+.al:active{background:#EFEDE7}
+
+/* bouton encaisser */
+.btn.enc{min-height:46px;font-size:14.5px;margin-top:11px;background:#1E7A3C;box-shadow:none}
+.btn.enc:active{background:#186331}
+
+/* suggestions client */
+.sugg{display:flex;flex-direction:column;gap:5px;margin-top:6px}
+.sugg button{background:var(--paper-2);border:1.5px solid #DCD8CE;border-radius:10px;padding:9px 12px;
+  text-align:left;display:flex;flex-direction:column;gap:1px;min-height:46px;justify-content:center}
+.sugg b{font-size:14px;font-weight:700}
+.sugg i{font-style:normal;font-size:12px;color:var(--mute)}
+.sugg button:active{background:#EFEDE7}
+
+.old{color:#C0392B!important;font-weight:700}
+.tag.w{background:#E8A33D}
+
 /* panier */
 .cart{display:flex;flex-direction:column;gap:9px}
 .cl{background:var(--paper-2);border:1.5px solid #DCD8CE;border-radius:12px;padding:10px}
@@ -348,6 +377,8 @@ S.orders.forEach(o=>{
     o.lignes=[{g:gDeP(o.prix),p:+o.prix||4000,q:+o.qte||1}];
   }
   if(o.promo===undefined)o.promo="";
+  // "paye" = argent réellement reçu. Avant, on le déduisait du statut Livrée.
+  if(o.paye===undefined)o.paye=(o.statut==="Livrée")?total(o):(+o.avance||0);
   if(o.adresse===undefined) o.adresse="";
   if(o.avance===undefined)  o.avance=0;
   if(o.paySolde===undefined)o.paySolde="Espèces";
@@ -388,17 +419,18 @@ const frais=(o)=>isFree(o)?0:(+o.frais||0);
 const total=(o)=>articles(o)+frais(o);
 // L'avance ne peut jamais dépasser le total ni être négative.
 const avance=(o)=>Math.max(0,Math.min(+o.avance||0,total(o)));
-const reste=(o)=>total(o)-avance(o);
+const reste=(o)=>total(o)-encaisse(o);
 const solde=(o)=>reste(o)<=0;                        // entièrement payé
 const active=()=>S.orders.filter(o=>o.statut!=="Annulée");
 
 // --- Moteur financier -------------------------------------------------
-// Encaissé = argent réellement reçu, pas facturé.
-// Commande livrée -> tout est encaissé. Sinon -> seulement l'avance.
+// Encaissé = argent réellement reçu (champ "paye"), indépendant du statut.
+// "Livrée" veut dire livrée ; "payé" veut dire payé. Les deux ne sont plus liés.
 // Une commande annulée n'encaisse rien (l'avance rendue se saisit en dépense "Remboursement").
 const encaisse=(o)=>{
   if(o.statut==="Annulée")return 0;
-  return o.statut==="Livrée"?total(o):avance(o);
+  const p=(o.paye===undefined)?((o.statut==="Livrée")?total(o):avance(o)):(+o.paye||0);
+  return Math.max(0,Math.min(p,total(o)));
 };
 const duRest=(o)=>{                                   // ce qu'on te doit encore
   if(o.statut==="Annulée")return 0;
@@ -488,7 +520,14 @@ let tab="acc";
 document.getElementById("nav").innerHTML=TABS.map(([id,l,p])=>
   `<button data-t="${id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${p}</svg>${l}</button>`).join("");
 document.getElementById("nav").onclick=e=>{const b=e.target.closest("button");if(b)go(b.dataset.t);};
-function go(t){tab=t;document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));document.getElementById("main").scrollTop=0;render();}
+const SUB={dus:"acc",resa:"acc"};   // sous-écrans : quel onglet reste allumé
+function go(t){
+  tab=t;
+  const on=SUB[t]||t;
+  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===on));
+  document.getElementById("main").scrollTop=0;
+  render();
+}
 
 // ---------- Views ----------
 function vAcc(){
@@ -501,8 +540,19 @@ function vAcc(){
   const pr=(obj,cols)=>{const tt=Object.values(obj).reduce((a,b)=>a+b,0)||1;
     return Object.entries(obj).sort((a,b)=>b[1]-a[1]).map(([k,v],i)=>
       `<div class="row"><b>${k}</b><div class="t"><i style="width:${v/tt*100}%;background:${cols[i%cols.length]}"></i></div><u>${typeof v==="number"&&v>999?money(v):v}</u></div>`).join("")||`<p style="color:var(--mute);font-size:13px;margin:0">Aucune donnée</p>`;};
+  const dus=S.orders.filter(o=>duRest(o)>0);
+  const dusT=dus.reduce((a,o)=>a+duRest(o),0);
+  const rz=S.orders.filter(o=>o.resa&&o.statut!=="Livrée"&&o.statut!=="Annulée"&&
+    o.dateResa&&o.dateResa<today());
   return `<div class="page">
     <h2 class="t">Tableau de bord</h2><p class="sub">${s.nb} commande${s.nb>1?"s":""} enregistrée${s.nb>1?"s":""}</p>
+    ${dus.length||rz.length?`<div class="alerts">
+      ${dus.length?`<button class="al" onclick="go('dus')">
+        <span>💵 ${dus.length} impayé${dus.length>1?"s":""}</span><b>${money(dusT)}</b><i>Voir →</i></button>`:""}
+      ${rz.length?`<button class="al w" onclick="go('resa')">
+        <span>📦 ${rz.length} réservation${rz.length>1?"s":""} dépassée${rz.length>1?"s":""}</span>
+        <b>${esc(rz[0].nom)}${rz.length>1?" +"+(rz.length-1):""}</b><i>Voir →</i></button>`:""}
+    </div>`:""}
     <div class="grid">
       <div class="kpi"><div class="k">💰 CA du jour</div><div class="v">${money(s.jour)}</div></div>
       <div class="kpi"><div class="k">📅 Cette semaine</div><div class="v">${money(s.sem)}</div></div>
@@ -544,9 +594,11 @@ function vNew(){
   const pr=pInfo(D.promo);
   const promoKO=D.promo&&pr.calc&&pr.calc(D.lignes)===null;
   return `<div class="page">
+    ${E?`<button class="bk" onclick="cancelEdit()">← Commandes</button>`:""}
     <h2 class="t">${E?"Modifier la vente":"Nouvelle vente"}</h2>
     <p class="sub">${num} · ${E?dmy(E.date):dmy(today())}</p>
-    <div class="f"><label>Nom du client</label><input id="i-nom" placeholder="Ex : Awa Ndiaye" autocomplete="off" value="${esc(D.nom||"")}"></div>
+    <div class="f"><label>Nom du client</label><input id="i-nom" placeholder="Ex : Awa Ndiaye" autocomplete="off" value="${esc(D.nom||"")}" oninput="sugg(this.value)">
+      <div id="sg" class="sugg"></div></div>
     <div class="f"><label>Téléphone</label><input id="i-tel" type="tel" inputmode="numeric" placeholder="77 123 45 67" value="${esc(D.tel||"")}"></div>
     <div class="f2">
       <div class="f"><label>Ville</label><input id="i-ville" placeholder="Ex : Dakar" autocomplete="off" value="${esc(D.ville||"")}"></div>
@@ -610,6 +662,24 @@ function vNew(){
     ${E?`<button class="btn g" style="margin-top:9px" onclick="cancelEdit()">Annuler</button>`:""}
   </div>`;
 }
+// Un habitué : 3 lettres suffisent, on remplit le reste.
+window.sugg=v=>{
+  const b=document.getElementById("sg"); if(!b)return;
+  const q=String(v||"").toLowerCase().trim();
+  if(q.length<3){b.innerHTML="";return;}
+  const seen={},L=[];
+  S.orders.forEach(o=>{
+    const k=o.tel||o.nom;
+    if(!seen[k]&&String(o.nom||"").toLowerCase().includes(q)){seen[k]=1;L.push(o);}
+  });
+  b.innerHTML=L.slice(0,4).map(o=>`<button onclick="pick('${o.id}')">
+    <b>${esc(o.nom)}</b><i>${esc(o.tel)} · ${esc(o.ville)}</i></button>`).join("");
+};
+window.pick=id=>{
+  const o=S.orders.find(x=>x.id===id); if(!o)return;
+  D.nom=o.nom;D.tel=o.tel;D.ville=o.ville;D.adresse=o.adresse||"";D.hors=!!o.hors;
+  render();toast("Fiche client reprise");
+};
 function keep(){const g=id=>{const e=document.getElementById(id);return e?e.value:"";};
   D.nom=g("i-nom");D.tel=g("i-tel");D.ville=g("i-ville");D.adresse=g("i-adr");}
 window.setH=v=>{keep();D.hors=!!v;render();};
@@ -642,10 +712,14 @@ window.add=()=>{
   const tt=articles(D)+frais(D);
   const av=Math.max(0,Math.min(+D.avance||0,tt));
   const L=D.lignes.map(l=>({g:l.g,p:+l.p,q:Math.max(1,+l.q||1)}));
+  // paye : à la création = l'avance. En modification, on ne touche pas à ce
+  // qui a déjà été encaissé (bouton "Encaisser le solde"), sauf si l'avance monte.
+  let py=av;
+  if(E){const cur=S.orders.find(x=>x.id===E.id); if(cur)py=Math.max(+cur.paye||0,av);}
   const body={nom:D.nom.trim(),tel:D.tel.trim(),ville:D.ville.trim(),adresse:(D.adresse||"").trim(),
     hors:D.hors,lignes:L,promo:D.promo||"",
     qte:nbTot(L),prix:L[0].p,                       // compat : anciens champs tenus à jour
-    frais:D.frais,avance:av,paySolde:D.paySolde,
+    frais:D.frais,avance:av,paye:py,paySolde:D.paySolde,
     resa:D.resa,dateResa:D.resa?(D.dateResa||""):"",
     paiement:D.paiement,livreur:D.livreur,statut:D.statut};
   if(E){
@@ -663,6 +737,79 @@ window.add=()=>{
   D=D0();D.paiement=pay;D.livreur=liv;
   toast("Vente enregistrée");go("his");
 };
+// ---------- Encaisser le solde ----------
+// Séparé du statut : "Livrée" ne veut plus dire "payé".
+window.enc=id=>{
+  const o=S.orders.find(x=>x.id===id);
+  if(!o)return toast("Commande introuvable");
+  const rs=reste(o);
+  if(rs<=0)return toast("Déjà soldé");
+  const d=document.createElement("div");d.id="modal";
+  d.innerHTML=`<div class="box"><h3>Encaisser le solde</h3>
+    <p>${esc(o.nom)} · ${o.id}</p>
+    <div class="pay" style="margin-bottom:14px">
+      <div class="pr"><span>Total</span><b>${money(total(o))}</b></div>
+      <div class="pr"><span>Déjà encaissé</span><b>${money(encaisse(o))}</b></div>
+      <div class="pr big"><span>Reste</span><b>${money(rs)}</b></div>
+    </div>
+    <div class="f"><label>Montant encaissé maintenant</label>
+      <input id="e-mt" type="number" inputmode="numeric" min="0" value="${rs}"></div>
+    <div class="f"><label>Reçu par</label>
+      <div class="seg pill" id="e-moy">${MOY.map((x,i)=>`<button data-m="${x}" class="${x===(o.paySolde||"Espèces")?"on":""}">${x==="Orange Money"?"OM":x}</button>`).join("")}</div></div>
+    <div class="mb"><button class="btn g" id="no">Annuler</button><button class="btn" id="yes">Encaisser</button></div></div>`;
+  document.body.appendChild(d);
+  let moy=o.paySolde||"Espèces";
+  d.querySelectorAll("#e-moy button").forEach(b=>b.onclick=()=>{
+    moy=b.dataset.m;
+    d.querySelectorAll("#e-moy button").forEach(x=>x.classList.toggle("on",x===b));
+  });
+  d.querySelector("#no").onclick=()=>d.remove();
+  d.onclick=e=>{if(e.target===d)d.remove();};
+  d.querySelector("#yes").onclick=()=>{
+    const v=Math.max(0,parseInt(d.querySelector("#e-mt").value)||0);
+    if(!v)return toast("Entre un montant");
+    o.paye=Math.min(total(o),(+o.paye||0)+v);
+    o.paySolde=moy;
+    save();d.remove();
+    toast(reste(o)<=0?"Commande soldée ✅":"Encaissé · reste "+money(reste(o)));
+    render();
+  };
+};
+
+// ---------- Impayés ----------
+function vDus(){
+  const L=S.orders.filter(o=>duRest(o)>0).sort((a,b)=>a.date<b.date?-1:1);
+  const tot=L.reduce((s,o)=>s+duRest(o),0);
+  const jours=d=>Math.floor((new Date(today())-new Date(d))/86400000);
+  return `<div class="page">
+    <button class="bk" onclick="go('acc')">← Accueil</button>
+    <h2 class="t">Ils me doivent</h2><p class="sub">${L.length} commande${L.length>1?"s":""} · ${money(tot)}</p>
+    ${L.length?L.map(o=>{const j=jours(o.date);
+      return `<div class="o">
+      <div class="h"><div><div class="n">${esc(o.nom)}</div>
+        <div class="m">${o.id} · ${dmy(o.date)}</div>
+        <div class="m ${j>=14?"old":""}">${j===0?"aujourd'hui":"il y a "+j+" jour"+(j>1?"s":"")}${j>=14?" ⚠️":""}</div></div>
+        <div style="text-align:right"><div class="p" style="color:#B8860B">${money(duRest(o))}</div>
+        <div class="m" style="font-size:11.5px">sur ${fmt(total(o))}</div></div></div>
+      <div class="f" style="gap:6px">
+        <button class="ed" style="flex:1" onclick="wa('${o.id}')">💬 Relancer</button>
+        <button class="btn enc" style="flex:1.4;margin:0" onclick="enc('${o.id}')">💵 Encaisser</button>
+      </div></div>`;}).join("")
+    :`<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 6L9 17l-5-5"/></svg>
+      <b>Personne ne te doit rien</b><p>Toutes tes commandes sont soldées</p></div>`}
+  </div>`;
+}
+// Ouvre WhatsApp sur le bon numéro avec un message prêt.
+window.wa=id=>{
+  const o=S.orders.find(x=>x.id===id);
+  if(!o)return;
+  const tel=String(o.tel||"").replace(/[^\d]/g,"");
+  if(!tel)return toast("Pas de numéro sur cette commande");
+  const num=tel.length===9?"221"+tel:tel;   // Sénégal
+  const msg=`Bonjour ${o.nom}, petit rappel pour ta commande ${o.id} : il reste ${fmt(duRest(o))} F à régler. Merci !`;
+  window.open("https://wa.me/"+num+"?text="+encodeURIComponent(msg),"_blank");
+};
+
 // ---------- Facture ----------
 // Pas de nom du client : seul le n° de commande identifie la facture.
 window.fac=id=>{
@@ -758,6 +905,41 @@ window.edit=id=>{
 };
 window.cancelEdit=()=>{E=null;D=D0();go("his");};
 
+// ---------- Réservations ----------
+function vResa(){
+  const L=S.orders.filter(o=>o.resa&&o.statut!=="Livrée"&&o.statut!=="Annulée")
+    .sort((a,b)=>(a.dateResa||"9999")<(b.dateResa||"9999")?-1:1);
+  const jours=d=>Math.floor((new Date(today())-new Date(d))/86400000);
+  return `<div class="page">
+    <button class="bk" onclick="go('acc')">← Accueil</button>
+    <h2 class="t">Réservations</h2><p class="sub">${L.length} article${L.length>1?"s":""} en attente de retrait</p>
+    ${L.length?L.map(o=>{
+      const dep=o.dateResa&&o.dateResa<today(), j=o.dateResa?jours(o.dateResa):null;
+      return `<div class="o">
+      <div class="h"><div><div class="n">${esc(o.nom)} ${dep?'<span class="tag w">DÉPASSÉE</span>':'<span class="tag">RÉSERVÉ</span>'}</div>
+        <div class="m">${o.id} · ${lignes(o).map(l=>l.q+" "+gInfo(l.g).n).join(" · ")}</div>
+        <div class="m ${dep?"old":""}">${o.dateResa?(dep?"Devait retirer il y a "+j+" jour"+(j>1?"s":""):"Retrait prévu le "+dmy(o.dateResa)):"Pas de date de retrait"}</div></div>
+        <div style="text-align:right"><div class="p">${money(total(o))}</div>
+        <div class="m" style="font-size:11.5px">${reste(o)>0?"reste "+fmt(reste(o)):"soldé ✅"}</div></div></div>
+      <div class="f" style="gap:6px">
+        <button class="ed" style="flex:1" onclick="waR('${o.id}')">💬 Relancer</button>
+        <button class="ed" style="flex:1" onclick="chS('${o.id}','Livrée')">✅ Retiré</button>
+      </div></div>`;}).join("")
+    :`<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M9 7V5a3 3 0 016 0v2"/></svg>
+      <b>Aucune réservation</b><p>Les articles réservés apparaîtront ici</p></div>`}
+  </div>`;
+}
+window.waR=id=>{
+  const o=S.orders.find(x=>x.id===id); if(!o)return;
+  const tel=String(o.tel||"").replace(/[^\d]/g,"");
+  if(!tel)return toast("Pas de numéro sur cette commande");
+  const num=tel.length===9?"221"+tel:tel;
+  const r=reste(o);
+  const msg=`Bonjour ${o.nom}, ta casquette est toujours en réservation chez nous (${o.id})`+
+    (r>0?`. Il reste ${fmt(r)} F à régler.`:` et elle est déjà payée.`)+` Tu passes quand ?`;
+  window.open("https://wa.me/"+num+"?text="+encodeURIComponent(msg),"_blank");
+};
+
 // ---------- Finances ----------
 let fm=null;              // mois affiché (null = mois courant)
 let FD=null, FB=null, FS=null;   // formulaire dépense / achat / stock ouvert
@@ -829,6 +1011,7 @@ window.setM=m=>{fm=m;render();};
 window.openStk=()=>{FS={STD:reste_stock("STD"),PRM:reste_stock("PRM"),RAR:reste_stock("RAR")};render();};
 function vStk(){
   return `<div class="page">
+    <button class="bk" onclick="closeF()">← Finances</button>
     <h2 class="t">Ajuster le stock</h2>
     <p class="sub">Après un comptage physique : entre ce que tu as vraiment</p>
     ${GAMME.map(g=>`<div class="f"><label>${g.n} · ${fmt(g.p)} F <i style="font-weight:400;text-transform:none">(app : ${reste_stock(g.k)})</i></label>
@@ -860,6 +1043,7 @@ function vDep(){
   const m=(fm||curMonth()), f=fin(m);
   const mt=Math.max(0,parseInt(String(FD.montant).replace(/[^\d]/g,""))||0);
   return `<div class="page">
+    <button class="bk" onclick="closeF()">← Finances</button>
     <h2 class="t">${FD.id?"Modifier la dépense":"Nouvelle dépense"}</h2><p class="sub">${dmy(FD.date)}</p>
     <div class="f"><label>Montant</label>
       <input id="d-mt" type="number" inputmode="numeric" min="0" placeholder="0" value="${FD.montant}"
@@ -904,6 +1088,7 @@ function vBuy(){
   const tr=Math.max(0,parseInt(FB.transport)||0), au=Math.max(0,parseInt(FB.autres)||0);
   const tt=q*pu+tr+au;
   return `<div class="page">
+    <button class="bk" onclick="closeF()">← Finances</button>
     <h2 class="t">${FB.id?"Modifier l'achat":"Nouvel achat"}</h2><p class="sub">Marchandise · ${dmy(FB.date)}</p>
     <div class="f"><label>Fournisseur <i style="font-weight:400;text-transform:none">(facultatif)</i></label>
       <input id="b-fr" placeholder="Ex : Diallo Import" value="${esc(FB.four)}" oninput="FB.four=this.value"></div>
@@ -966,7 +1151,7 @@ function vHis(){
     <input class="search" id="q" placeholder="Nom, téléphone, ville ou n°" value="${q}" autocomplete="off">
     <div class="chips">${["Toutes","Réservés",...STAT].map(s=>`<button onclick="setS('${s}')" class="${fs===s?"on":""}">${s}</button>`).join("")}</div>
     ${list.length?list.map(o=>{
-      const av=avance(o),rs=reste(o);
+      const av=encaisse(o),rs=reste(o);
       return `<div class="o">
       <div class="h"><div><div class="n">${o.id}${o.resa?` <span class="tag">RÉSERVÉ</span>`:""}</div>
         <div class="m">${esc(o.nom)} · ${esc(o.tel)}</div></div>
@@ -981,7 +1166,7 @@ function vHis(){
         <div><span>Sous-total</span><b>${money(articles(o))}</b></div>
         <div><span>Livraison</span><b>${isFree(o)?"Offerte":(frais(o)===0?"Offerte":money(frais(o)))}</b></div>
         <div><span>Total</span><b>${money(total(o))}</b></div>
-        <div><span>Avance</span><b${av>0?' style="color:#1E7A3C"':''}>${money(av)}</b></div>
+        <div><span>Encaissé</span><b${av>0?' style="color:#1E7A3C"':''}>${money(av)}</b></div>
         <div><span>Reste à payer</span><b${rs>0?' style="color:#B8860B"':' style="color:#1E7A3C"'}>${rs>0?money(rs):"Soldé ✅"}</b></div>
         ${rs>0?`<div><span>Solde par</span><b>${esc(o.paySolde||"Espèces")}</b></div>`:""}
         <div><span>Paiement</span><b>${esc(o.paiement)}</b></div>
@@ -990,6 +1175,7 @@ function vHis(){
         ${o.resa&&o.dateResa?`<div><span>Récupération</span><b>${dmy(o.dateResa)}</b></div>`:""}
       </div>
 
+      ${rs>0&&o.statut!=="Annulée"?`<button class="btn enc" onclick="enc('${o.id}')">💵 Encaisser le solde · ${money(rs)}</button>`:""}
       <div class="f"><span class="st ${SKEY[o.statut]}">${o.statut}</span>
         <div style="display:flex;gap:6px;align-items:center">
         <select onchange="chS('${o.id}',this.value)">${STAT.map(s=>`<option ${o.statut===s?"selected":""}>${s}</option>`).join("")}</select>
@@ -1063,14 +1249,14 @@ function dl(name,txt,type){
 }
 window.expCSV=()=>{
   if(!S.orders.length)return toast("Aucune commande à exporter");
-  const H=["N° Commande","Date","Nom client","Téléphone","Ville","Adresse","Hors Dakar","Détail articles","Standard","Premium","Rare","Quantité","Sous-total","Promotion","Remise","Total articles","Frais livraison","TOTAL A PAYER","Avance versée","Reste à payer","Mode paiement solde","Paiement","Livreur","Statut","Réservation","Date récupération"];
+  const H=["N° Commande","Date","Nom client","Téléphone","Ville","Adresse","Hors Dakar","Détail articles","Standard","Premium","Rare","Quantité","Sous-total","Promotion","Remise","Total articles","Frais livraison","TOTAL A PAYER","Avance versée","Encaissé","Reste à payer","Mode paiement solde","Paiement","Livreur","Statut","Réservation","Date récupération"];
   const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
   const rows=S.orders.map(o=>{const L=lignes(o);
     return [o.id,dmy(o.date),o.nom,o.tel,o.ville,o.adresse||"",o.hors?"OUI":"NON",
     L.map(l=>l.q+"x"+gInfo(l.g).n+"@"+l.p).join(" + "),
     nbG(L,"STD"),nbG(L,"PRM"),nbG(L,"RAR"),qteTot(o),brut(o),
     o.promo?pInfo(o.promo).n:"",remise(o),articles(o),frais(o),total(o),
-    avance(o),reste(o),(reste(o)>0?(o.paySolde||""):"Soldé"),o.paiement,o.livreur,o.statut,
+    avance(o),encaisse(o),reste(o),(reste(o)>0?(o.paySolde||""):"Soldé"),o.paiement,o.livreur,o.statut,
     o.resa?"OUI":"NON",o.dateResa?dmy(o.dateResa):""].map(q).join(";");});
   dl("ventes-horizon-"+today()+".csv","\uFEFF"+H.map(q).join(";")+"\r\n"+rows.join("\r\n"),"text/csv");
   toast("Export CSV prêt");
@@ -1105,6 +1291,7 @@ window.imp=()=>{
         S.orders.forEach(o=>{
           if(!Array.isArray(o.lignes))o.lignes=[{g:gDeP(o.prix),p:+o.prix||4000,q:+o.qte||1}];
           if(o.promo===undefined)o.promo="";
+          if(o.paye===undefined)o.paye=(o.statut==="Livrée")?total(o):(+o.avance||0);
         });
         S.orders.forEach(o=>{
           if(o.adresse===undefined) o.adresse="";
@@ -1139,7 +1326,7 @@ function confirmBox(t,m,ok){
 
 // ---------- Render ----------
 function render(){
-  const V={acc:vAcc,new:vNew,his:vHis,fin:vFin,cli:vCli,rap:vRap};
+  const V={acc:vAcc,new:vNew,his:vHis,fin:vFin,cli:vCli,rap:vRap,dus:vDus,resa:vResa};
   document.getElementById("main").innerHTML=V[tab]();
   const s=document.getElementById("q");
   if(s)s.oninput=e=>{q=e.target.value;const p=e.target.selectionStart;render();
